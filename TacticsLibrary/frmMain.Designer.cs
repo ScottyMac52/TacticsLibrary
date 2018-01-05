@@ -34,10 +34,14 @@
             this.plotPanel = new System.Windows.Forms.Panel();
             this.lblCurrentWidth = new System.Windows.Forms.Label();
             this.lblCurrentHeight = new System.Windows.Forms.Label();
+            this.contactSpeed = new System.Windows.Forms.NumericUpDown();
+            this.contactCourse = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.contactSpeed)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.contactCourse)).BeginInit();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -47,6 +51,8 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.contactCourse);
+            this.splitContainer1.Panel1.Controls.Add(this.contactSpeed);
             this.splitContainer1.Panel1.Controls.Add(this.selectClass);
             this.splitContainer1.Panel1.Controls.Add(this.selectType);
             // 
@@ -111,6 +117,45 @@
             this.lblCurrentHeight.Size = new System.Drawing.Size(0, 13);
             this.lblCurrentHeight.TabIndex = 3;
             // 
+            // contactSpeed
+            // 
+            this.contactSpeed.Location = new System.Drawing.Point(60, 205);
+            this.contactSpeed.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.contactSpeed.Name = "contactSpeed";
+            this.contactSpeed.Size = new System.Drawing.Size(120, 20);
+            this.contactSpeed.TabIndex = 2;
+            this.contactSpeed.Value = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            // 
+            // contactCourse
+            // 
+            this.contactCourse.Location = new System.Drawing.Point(60, 232);
+            this.contactCourse.Maximum = new decimal(new int[] {
+            360,
+            0,
+            0,
+            0});
+            this.contactCourse.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.contactCourse.Name = "contactCourse";
+            this.contactCourse.Size = new System.Drawing.Size(120, 20);
+            this.contactCourse.TabIndex = 3;
+            this.contactCourse.Value = new decimal(new int[] {
+            90,
+            0,
+            0,
+            0});
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -125,6 +170,8 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.contactSpeed)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.contactCourse)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -138,6 +185,8 @@
         private System.Windows.Forms.Label lblCurrentHeight;
         private System.Windows.Forms.ListBox selectClass;
         private System.Windows.Forms.ListBox selectType;
+        private System.Windows.Forms.NumericUpDown contactSpeed;
+        private System.Windows.Forms.NumericUpDown contactCourse;
     }
 }
 

@@ -4,29 +4,51 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Numerics;
 using TacticsLibrary.Adapters;
+using TacticsLibrary.Converters;
 using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
+using TacticsLibrary.TrackingObjects;
 
 namespace TacticsLibrary.DrawObjects
 {
     public class RwrReceiver : IVisibleObjects, IRwrReceiver
     {
-        public const double OFFSET_THETA = -90.00;
-
-        public bool Ready { get; private set; }
+        /// <summary>
+        /// The location of the center of the Rwr on the X Axis
+        /// </summary>
         public float CenterPositionX { get; set; }
+        /// <summary>
+        /// The location of the center of the Rwr on the Y Axis
+        /// </summary>
         public float CenterPositionY { get; set; }
+        /// <summary>
+        /// The Radius of the Rwr
+        /// </summary>
         public float Radius { get; set; }
+        /// <summary>
+        /// The seperation of the range rings in pixels
+        /// </summary>
         public float RingSep { get; set; }
+        /// <summary>
+        /// HThe number of range rings to display
+        /// </summary>
         public int RangeRings { get; set; }
-        public List<RwrPoint> PlottedPoints { get; protected set; }
+        public SortedList<Guid, RwrPoint> PlottedPoints { get; protected set; }
 
         public Point BullsEye { get; private set; }
         public Point HomePlate { get; private set; }
 
+        public Point OwnShip => new Point((int) CenterPositionX, (int) CenterPositionY);
+
+        public event EventHandler UpdatePending;
+
+        protected virtual void OnUpdatePending(EventArgs e)
+        {
+            UpdatePending?.Invoke(this, e);
+        }
+
         public RwrReceiver(Point bullsEye, Point homePlate)
         {
-            Ready = false;
             BullsEye = bullsEye;
             HomePlate = homePlate;
         }
@@ -57,41 +79,63 @@ namespace TacticsLibrary.DrawObjects
             g.FillCircle(Brushes.Blue, HomePlate.X, HomePlate.Y, 5);
 
             // Plot all points
-            PlottedPoints?.ForEach(pp =>
+            foreach (var item in PlottedPoints)
             {
-                pp.Draw(g);
-            });
+                item.Value.Draw(g);
+            }
         }
+
+        /// <summary>
+        /// Plots a contact using the specified Offset the offset can be any point 
+        /// </summary>
+        /// <param name="offset">Point that represents the startiong point for the plot</param>
+        /// <param name="degrees">Bearing from offset in degrees</param>
+        /// <param name="radius">Range in nautical miles</param>
+        /// <param name="altitude">Altitude of the contact</param>
+        /// <param name="speed">Speed of the contact in knts</param>
+        /// <param name="course">Course of the contact in degrees</param>
+        /// <param name="contactType">Type of contact</param>
+        /// <returns></returns>
+        public RwrPoint PlotContact(Point offset, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
+        {
+            var plotPoint = CalculatePointFromDegrees(offset, radius, degrees);
+            var newPoint = new RwrPoint(OwnShip, BullsEye, HomePlate, plotPoint, altitude, contactType, course, speed);
+            AddPoint(newPoint, contactType);
+            return newPoint;
+        }
+
 
         /// <summary>
         /// Plots a contact using OwnShip as a default reference but supports BullsEye & HomePlate callouts too
         /// </summary>
         /// <param name="refPos">Where the coordinate (0,0) origin is</param>
-        /// <param name="radius">The number of units</param>
         /// <param name="degrees">The angle of the contact in compass degrees</param>
+        /// <param name="radius">The number of units</param>
         /// <param name="contactType">The type of contact, defaults to AirUnknown</param>
-        public void PlotContact(ReferencePositions refPos, double radius, double degrees, ContactTypes contactType = ContactTypes.AirUnknown)
+        /// <param name="altitude"></param>
+        /// <param name="speed"></param>
+        /// <param name="course"></param>
+        public RwrPoint PlotContact(ReferencePositions refPos, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
         {
             Point offset = new Point((int)Math.Round(CenterPositionX, 0), (int)Math.Round(CenterPositionY, 0));
-            var originMarker = "O";
             switch (refPos)
             {
                 case ReferencePositions.BullsEye:
                     offset = BullsEye;
-                    originMarker = "B";
                     break;
                 case ReferencePositions.HomePlate:
                     offset = HomePlate;
-                    originMarker = "H";
                     break;
                 default:
                     break;
             }
 
-            var plotPoint = CalculatePointFromDegrees(offset, radius, degrees);
-   
-            // Add the point 
-            AddPoint(plotPoint, $"{originMarker}:({radius}, {degrees}°)", contactType);
+            return PlotContact(offset, radius, degrees, altitude, speed, course, contactType);
+        } 
+
+        public PolarCompassReference CalculateDegreesFromPoint(Point refPoint)
+        {
+            return CoordinateConverter.CalculateDegreesFromPoint(OwnShip, refPoint);
         }
 
         /// <summary>
@@ -103,50 +147,29 @@ namespace TacticsLibrary.DrawObjects
         /// <returns><see cref="Point"/> that references the location</returns>
         public Point CalculatePointFromDegrees(Point offset, double radius, double degrees)
         {
-            // Subtract the 90 degree offset to account for conversion from polar to compass coordinates
-            var theta = degrees + OFFSET_THETA;
-            // Calculate the degrees into Radians 
-            var radians = theta * (Math.PI / 180);
-
-            // X is radius * Cos(theta in radians)
-            var xValue = radius * Math.Cos(radians);
-            // Y is radius * Sin(theta in radians)
-            var yValue = radius * Math.Sin(radians);
-
-            // Account for specified offset
-            Int32 x = offset.X + (int)Math.Round(xValue, 0);
-            Int32 y = offset.Y + (int)Math.Round(yValue, 0);
-
-            return new Point(x, y);
+            return CoordinateConverter.CalculatePointFromDegrees(offset, radius, degrees);
         }
-
-
 
         /// <summary>
         /// Adds a point as a type and class of contact 
         /// </summary>
-        /// <param name="pt"></param>
-        /// <param name="referenceText"></param>
-        /// <param name="contactType"></param>
-        public void AddPoint(Point pt, string referenceText, ContactTypes contactType)
+        public void AddPoint(RwrPoint newPoint, ContactTypes contactType)
         {
             if(PlottedPoints == null)
             {
-                PlottedPoints = new List<RwrPoint>();
+                PlottedPoints = new SortedList<Guid, RwrPoint>();
+            }
+            if (!PlottedPoints.ContainsKey(newPoint.UniqueId))
+            {
+                PlottedPoints.Add(newPoint.UniqueId, newPoint);
             }
 
-            PlottedPoints.Add(new RwrPoint()
-            {
-                Position = pt,
-                TimeStamp = DateTime.UtcNow,
-                ReferenceText = referenceText,
-                ContactType = contactType
-            });
+            newPoint.UpdatePending += NewPoint_UpdatePending;
         }
 
-        public void Invalidate(Rectangle invalidRect)
+        private void NewPoint_UpdatePending(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            OnUpdatePending(new EventArgs());
         }
     }
 }

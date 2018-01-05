@@ -4,6 +4,8 @@ namespace TacticsLibrary.Adapters
 {
     public interface IGraphics
     {
+        Graphics Context { get; }
+        void DrawLine(Pen color, Point start, Point end);
         void DrawEllipse(Pen pen, RectangleF rect);
         void DrawEllipse(Pen pen, float x, float y, float width, float height);
         void DrawEllipse(Pen pen, Rectangle rect);

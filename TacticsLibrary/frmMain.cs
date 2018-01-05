@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using TacticsLibrary.Adapters;
 using TacticsLibrary.DrawObjects;
 using TacticsLibrary.Enums;
+using TacticsLibrary.TrackingObjects;
 
 namespace TacticsLibrary
 {
@@ -25,33 +27,12 @@ namespace TacticsLibrary
             ThreatWarningReceiver = InitializeRwr();
 
             RandomNumberGen = new Random((int)DateTime.Now.Ticks);
- 
-            // First determine how many out of a possible 10 points we are going to plot
-            var maxPoints = RandomNumberGen.Next(10);
 
-            for(int currentPoint = 1; currentPoint < maxPoints; currentPoint++)
-            {
-                // Random Contact type
-                var contactType = GetRandomContactType();
-                // Randomm X
-                var xPos = RandomNumberGen.Next(plotPanel.Width);
-                // Random Y
-                var yPos = RandomNumberGen.Next(plotPanel.Height);
+            //AddRandomPlots(RandomNumberGen.Next(10));
 
-                ThreatWarningReceiver.AddPoint(new Point(xPos - 50, yPos + 10), $"{contactType} : {currentPoint}", contactType);
-            }
+            var friendly = ThreatWarningReceiver.PlotContact(new Point(plotPanel.Width / 2,plotPanel.Height / 2), 90, 100, 20000, 36000, 270, ContactTypes.AirFriendly);
 
-            // Now add plotted points
-            ThreatWarningReceiver.PlotContact(ReferencePositions.BullsEye, 50.00, 270.00, GetRandomContactType());
-            ThreatWarningReceiver.PlotContact(ReferencePositions.BullsEye, 150.00, 90.00, GetRandomContactType());
-            ThreatWarningReceiver.PlotContact(ReferencePositions.BullsEye, 225.00, 135.00, GetRandomContactType());
-            ThreatWarningReceiver.PlotContact(ReferencePositions.BullsEye, 200.00, 210.00, GetRandomContactType());
-            ThreatWarningReceiver.PlotContact(ReferencePositions.OwnShip, 100.00, 330.00, GetRandomContactType());
-            ThreatWarningReceiver.PlotContact(ReferencePositions.OwnShip, 150.00, 330.00, GetRandomContactType());
-            ThreatWarningReceiver.PlotContact(ReferencePositions.OwnShip, 200.00, 330.00, GetRandomContactType());
-            ThreatWarningReceiver.PlotContact(ReferencePositions.OwnShip, 240.00, 330.00, GetRandomContactType());
-            ThreatWarningReceiver.PlotContact(ReferencePositions.OwnShip, 95.00, 270.00, GetRandomContactType());
-            ThreatWarningReceiver.PlotContact(ReferencePositions.BullsEye, 150.00, 360.00, GetRandomContactType());
+            //var missile = ThreatWarningReceiver.PlotContact(friendly.Position, 90, 250, 20000, 36000, 270, ContactTypes.MissileMRM);
 
             plotPanel.Invalidate();
         }
@@ -59,6 +40,51 @@ namespace TacticsLibrary
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+        }
+
+        private void AddRandomPlots(int nPlots)
+        {
+            var randomPlots = GetRandomPlots(plotPanel.Width / 2, nPlots);
+
+            randomPlots.ForEach(rp =>
+            {
+                var contactType = GetRandomContactType();
+                var altitude = contactType.ToString().Contains("Air") || contactType.ToString().Contains("Missile") ? RandomNumberGen.Next(50000) : 0.00;
+                var course = RandomNumberGen.Next(360);
+                var speed = contactType.ToString().Contains("Air") ? RandomNumberGen.Next(300, 10000) : contactType.ToString().Contains("Missile") ? RandomNumberGen.Next(3000, 100000) : RandomNumberGen.Next(50);
+                var heading = RandomNumberGen.Next(course);
+                ThreatWarningReceiver.PlotContact(ReferencePositions.OwnShip, rp.Degrees, rp.Radius, altitude, speed, course, contactType);
+            });
+
+        }
+
+        private List<PolarCompassReference> GetRandomPlots(double rMax, int nPlots)
+        {
+            var randPlots = new List<PolarCompassReference>();
+
+            for (int i = 0; i < nPlots; i++)
+            {
+                var randomRange = RandomNumberGen.NextDouble() * rMax;
+                var randomBearing = RandomNumberGen.Next(360);
+
+                randPlots.Add(new PolarCompassReference() { Degrees = randomBearing, Radius = randomRange });
+            }
+
+            return randPlots;
+        }
+
+        private List<Point> GetRandomPoints(double rMax, int nPoints, Point offset)
+        {
+            var randPoints = new List<Point>();
+            for (int i = 0; i < nPoints; i++)
+            {
+                var r = Math.Sqrt((double)RandomNumberGen.Next() / int.MaxValue) * rMax;
+                var theta = (double)RandomNumberGen.Next() / int.MaxValue * 2 * Math.PI;
+                var newPoint = new Point((int)(r * Math.Cos(theta)), (int)(r * Math.Sin(theta)));
+                newPoint.Offset(offset);
+                randPoints.Add(newPoint);
+            }
+            return randPoints;
         }
 
         private ContactTypes GetRandomContactType()
@@ -82,7 +108,7 @@ namespace TacticsLibrary
 
         private RwrReceiver InitializeRwr()
         {
-            return new RwrReceiver(new Point(123, 90), new Point(100, 200))
+            var rwrReceiver = new RwrReceiver(new Point(123, 90), new Point(100, 200))
             {
                 CenterPositionX = plotPanel.Width / 2,
                 CenterPositionY = plotPanel.Height / 2,
@@ -90,6 +116,15 @@ namespace TacticsLibrary
                 RangeRings = 5,
                 RingSep = 50
             };
+
+            rwrReceiver.UpdatePending += RwrReceiver_UpdatePending;
+
+            return rwrReceiver;
+        }
+
+        private void RwrReceiver_UpdatePending(object sender, EventArgs e)
+        {
+            plotPanel.Invalidate();
         }
 
         private void DrawScan()
@@ -108,14 +143,15 @@ namespace TacticsLibrary
 
         private void plotPanel_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            ContactTypes contactType = ContactTypes.AirUnknown;
-            var typeToPlot = $"{selectType.Text}{selectClass.Text}";
+        //    ContactTypes contactType = ContactTypes.AirUnknown;
+        //    var typeToPlot = $"{selectType.Text}{selectClass.Text}";
 
-            if(Enum.TryParse(typeToPlot, out contactType))
-            {
-                ThreatWarningReceiver.AddPoint(new Point(e.X, e.Y), $"Added from {e.Button}", contactType);
-                plotPanel.Invalidate();
-            }
+        //    if(Enum.TryParse(typeToPlot, out contactType))
+        //    {
+        //        var newPoint = new RwrPoint(new Point(e.X, e.Y), 0.00, contactType, decimal.ToInt32(contactCourse.Value), decimal.ToInt32(contactSpeed.Value));
+        //        ThreatWarningReceiver.AddPoint(newPoint, contactType);
+        //        plotPanel.Invalidate();
+        //    }
         }
     }
 }

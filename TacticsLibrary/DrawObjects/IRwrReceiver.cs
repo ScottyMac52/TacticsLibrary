@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using TacticsLibrary.Adapters;
 using TacticsLibrary.Enums;
@@ -10,14 +11,12 @@ namespace TacticsLibrary.DrawObjects
         Point BullsEye { get; }
         float CenterPositionX { get; set; }
         float CenterPositionY { get; set; }
-        List<RwrPoint> PlottedPoints { get; }
+        SortedList<Guid, RwrPoint> PlottedPoints { get; }
         float Radius { get; set; }
         int RangeRings { get; set; }
-        bool Ready { get; }
         float RingSep { get; set; }
-        void AddPoint(Point pt, string referenceText, ContactTypes contactType);
+        void AddPoint(RwrPoint newPoint, ContactTypes contactType);
         void Draw(IGraphics g);
-        void Invalidate(Rectangle invalidRect);
-        void PlotContact(ReferencePositions refPos, double radius, double theta, ContactTypes contactType);
+        RwrPoint PlotContact(ReferencePositions refPos, double radius, double degrees, double altitude, int speed, int course, ContactTypes contactType);
     }
 }

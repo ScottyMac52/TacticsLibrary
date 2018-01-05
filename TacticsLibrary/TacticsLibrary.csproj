@@ -48,9 +48,12 @@
   <ItemGroup>
     <Compile Include="Adapters\GraphicsAdapter.cs" />
     <Compile Include="Adapters\IGraphics.cs" />
+    <Compile Include="Converters\CoordinateConverter.cs" />
     <Compile Include="DrawObjects\IRwrReceiver.cs" />
     <Compile Include="DrawObjects\IVisibleObjects.cs" />
-    <Compile Include="DrawObjects\RwrPoint.cs" />
+    <Compile Include="DrawObjects\RwrPoint.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DrawObjects\RwrReceiver.cs" />
     <Compile Include="Enums\ContactTypes.cs" />
     <Compile Include="Enums\ReferencePositions.cs" />
@@ -63,7 +66,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TrackingObjects\HistoricalPoint.cs" />
+    <Compile Include="TrackingObjects\PolarCompassReference.cs" />
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
     </EmbeddedResource>

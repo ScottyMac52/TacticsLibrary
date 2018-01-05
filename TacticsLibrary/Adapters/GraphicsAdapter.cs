@@ -6,9 +6,16 @@ namespace TacticsLibrary.Adapters
     {
         private readonly Graphics g;
 
+        public Graphics Context => g;
+
         public GraphicsAdapter(Graphics graphics)
         {
             g = graphics;
+        }
+
+        public void DrawLine(Pen color, Point start, Point end)
+        {
+            g.DrawLine(color, start, end);
         }
 
         public void DrawArc(Pen color, Rectangle contactArea, int v1, int v2)
