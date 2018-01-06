@@ -6,6 +6,7 @@ using TacticsLibrary.Adapters;
 using TacticsLibrary.Converters;
 using TacticsLibrary.Enums;
 using TacticsLibrary.TrackingObjects;
+using TacticsLibrary.Extensions;
 
 namespace TacticsLibrary.DrawObjects
 {
@@ -35,7 +36,7 @@ namespace TacticsLibrary.DrawObjects
         public Point HomePlate { get; protected set; }
         public Point OwnShip { get; protected set; }
 
-        public PolarCompassReference PolarPosit { get; protected set; }
+        public PolarCoordinate PolarPosit { get; protected set; }
 
         public IGraphics GraphicsContext { get; private set; }
 
@@ -102,7 +103,9 @@ namespace TacticsLibrary.DrawObjects
                 var offset = Position;
 
                 // Get the new position based on course and distance traveled
-                var newPos = CoordinateConverter.CalculatePointFromDegrees(offset, distance, Course);
+                var newPos = 
+
+                CoordinateConverter.CalculatePointFromDegrees(offset, distance, Course);
 
                 System.Diagnostics.Debug.Print($"Contact {UniqueId}, Type:{ContactType} Speed:{Speed} knts Course:{Course}° from Position:({Position.X}, {Position.Y}) to ({newPos.X}, {newPos.Y})");
 
@@ -135,7 +138,22 @@ namespace TacticsLibrary.DrawObjects
                 offsetPoint.X = 0;
             }
 
-            ReferenceText = $"{Position} -> {offsetPoint}";
+            if(Position.Y > OwnShip.Y)
+            {
+                offsetPoint.Y -= OwnShip.Y;
+            }
+            else if(Position.Y < OwnShip.Y)
+            {
+                offsetPoint.Y = offset.Y - Position.Y;
+            }
+            else
+            {
+                offsetPoint.Y = 0;
+            }
+
+            var polarCoord = CoordinateConverter.CalculateDegreesFromPoint(OwnShip, offsetPoint);
+
+            ReferenceText = $"{Position} -> {polarCoord}";
         }
 
         public void Draw(IGraphics g)

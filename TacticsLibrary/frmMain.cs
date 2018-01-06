@@ -30,9 +30,8 @@ namespace TacticsLibrary
 
             //AddRandomPlots(RandomNumberGen.Next(10));
 
-            var friendly = ThreatWarningReceiver.PlotContact(new Point(plotPanel.Width / 2,plotPanel.Height / 2), 90, 100, 20000, 36000, 270, ContactTypes.AirFriendly);
-
-            //var missile = ThreatWarningReceiver.PlotContact(friendly.Position, 90, 250, 20000, 36000, 270, ContactTypes.MissileMRM);
+            var friendly = ThreatWarningReceiver.PlotContact(new Point(plotPanel.Width / 2,plotPanel.Height / 2), 360, 100, 20000, 36000, 135, ContactTypes.AirEnemy);
+            var missile = ThreatWarningReceiver.PlotContact(friendly.Position, 180, 250, 20000, 360000, 135, ContactTypes.MissileMRM);
 
             plotPanel.Invalidate();
         }
@@ -58,16 +57,16 @@ namespace TacticsLibrary
 
         }
 
-        private List<PolarCompassReference> GetRandomPlots(double rMax, int nPlots)
+        private List<PolarCoordinate> GetRandomPlots(double rMax, int nPlots)
         {
-            var randPlots = new List<PolarCompassReference>();
+            var randPlots = new List<PolarCoordinate>();
 
             for (int i = 0; i < nPlots; i++)
             {
                 var randomRange = RandomNumberGen.NextDouble() * rMax;
                 var randomBearing = RandomNumberGen.Next(360);
 
-                randPlots.Add(new PolarCompassReference() { Degrees = randomBearing, Radius = randomRange });
+                randPlots.Add(new PolarCoordinate() { Degrees = randomBearing, Radius = randomRange });
             }
 
             return randPlots;

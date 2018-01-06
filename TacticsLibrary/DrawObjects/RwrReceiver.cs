@@ -133,7 +133,7 @@ namespace TacticsLibrary.DrawObjects
             return PlotContact(offset, radius, degrees, altitude, speed, course, contactType);
         } 
 
-        public PolarCompassReference CalculateDegreesFromPoint(Point refPoint)
+        public PolarCoordinate CalculateDegreesFromPoint(Point refPoint)
         {
             return CoordinateConverter.CalculateDegreesFromPoint(OwnShip, refPoint);
         }
