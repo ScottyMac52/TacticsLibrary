@@ -68,7 +68,7 @@ namespace TacticsLibrary.tests
             // ARRANGE
             var testPoint = new Point(5, 3);
             var offset = new Point(0, 0);
-            var expectedResult = new PolarCoordinate() { Degrees = 30.96377, Radius = 5.83095 };
+            var expectedResult = new PolarCoordinate() { Degrees = 30.96377, Radius = 5.831 };
 
             // ACT
             var polarRef = CoordinateConverter.CalculateDegreesFromPoint(offset, testPoint);

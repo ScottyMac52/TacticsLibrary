@@ -6,17 +6,17 @@ using TacticsLibrary.Enums;
 
 namespace TacticsLibrary.DrawObjects
 {
-    public interface IRwrReceiver
+    public interface IRadar
     {
         Point BullsEye { get; }
         float CenterPositionX { get; set; }
         float CenterPositionY { get; set; }
-        SortedList<Guid, RwrPoint> PlottedPoints { get; }
+        SortedList<Guid, PlottedPoint> PlottedPoints { get; }
         float Radius { get; set; }
         int RangeRings { get; set; }
         float RingSep { get; set; }
-        void AddPoint(RwrPoint newPoint, ContactTypes contactType);
+        void AddPoint(PlottedPoint newPoint, ContactTypes contactType);
         void Draw(IGraphics g);
-        RwrPoint PlotContact(ReferencePositions refPos, double radius, double degrees, double altitude, int speed, int course, ContactTypes contactType);
+        PlottedPoint PlotContact(ReferencePositions refPos, double radius, double degrees, double altitude, int speed, int course, ContactTypes contactType);
     }
 }

@@ -17,7 +17,7 @@ namespace TacticsLibrary
         int angle = 0;
         int StartAngle = 0;
 
-        protected RwrReceiver ThreatWarningReceiver { get; private set; }
+        protected RadarPicture ThreatWarningReceiver { get; private set; }
 
         protected Random RandomNumberGen { get; private set; }
 
@@ -105,9 +105,9 @@ namespace TacticsLibrary
             }
         }
 
-        private RwrReceiver InitializeRwr()
+        private RadarPicture InitializeRwr()
         {
-            var rwrReceiver = new RwrReceiver(new Point(123, 90), new Point(100, 200))
+            var rwrReceiver = new RadarPicture(new Point(123, 90), new Point(100, 200))
             {
                 CenterPositionX = plotPanel.Width / 2,
                 CenterPositionY = plotPanel.Height / 2,

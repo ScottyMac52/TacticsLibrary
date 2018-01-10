@@ -11,18 +11,18 @@ using TacticsLibrary.TrackingObjects;
 
 namespace TacticsLibrary.DrawObjects
 {
-    public class RwrReceiver : IVisibleObjects, IRwrReceiver
+    public class RadarPicture : IVisibleObjects, IRadar
     {
         /// <summary>
-        /// The location of the center of the Rwr on the X Axis
+        /// The location of the center of the Radar on the X Axis
         /// </summary>
         public float CenterPositionX { get; set; }
         /// <summary>
-        /// The location of the center of the Rwr on the Y Axis
+        /// The location of the center of the Radar on the Y Axis
         /// </summary>
         public float CenterPositionY { get; set; }
         /// <summary>
-        /// The Radius of the Rwr
+        /// The Radius of the Radar
         /// </summary>
         public float Radius { get; set; }
         /// <summary>
@@ -33,7 +33,7 @@ namespace TacticsLibrary.DrawObjects
         /// HThe number of range rings to display
         /// </summary>
         public int RangeRings { get; set; }
-        public SortedList<Guid, RwrPoint> PlottedPoints { get; protected set; }
+        public SortedList<Guid, PlottedPoint> PlottedPoints { get; protected set; }
 
         public Point BullsEye { get; private set; }
         public Point HomePlate { get; private set; }
@@ -47,7 +47,7 @@ namespace TacticsLibrary.DrawObjects
             UpdatePending?.Invoke(this, e);
         }
 
-        public RwrReceiver(Point bullsEye, Point homePlate)
+        public RadarPicture(Point bullsEye, Point homePlate)
         {
             BullsEye = bullsEye;
             HomePlate = homePlate;
@@ -96,10 +96,10 @@ namespace TacticsLibrary.DrawObjects
         /// <param name="course">Course of the contact in degrees</param>
         /// <param name="contactType">Type of contact</param>
         /// <returns></returns>
-        public RwrPoint PlotContact(Point offset, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
+        public PlottedPoint PlotContact(Point offset, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
         {
             var plotPoint = CalculatePointFromDegrees(offset, radius, degrees);
-            var newPoint = new RwrPoint(OwnShip, BullsEye, HomePlate, plotPoint, altitude, contactType, course, speed);
+            var newPoint = new PlottedPoint(OwnShip, BullsEye, HomePlate, plotPoint, altitude, contactType, course, speed);
             AddPoint(newPoint, contactType);
             return newPoint;
         }
@@ -115,7 +115,7 @@ namespace TacticsLibrary.DrawObjects
         /// <param name="altitude"></param>
         /// <param name="speed"></param>
         /// <param name="course"></param>
-        public RwrPoint PlotContact(ReferencePositions refPos, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
+        public PlottedPoint PlotContact(ReferencePositions refPos, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
         {
             Point offset = new Point((int)Math.Round(CenterPositionX, 0), (int)Math.Round(CenterPositionY, 0));
             switch (refPos)
@@ -153,11 +153,11 @@ namespace TacticsLibrary.DrawObjects
         /// <summary>
         /// Adds a point as a type and class of contact 
         /// </summary>
-        public void AddPoint(RwrPoint newPoint, ContactTypes contactType)
+        public void AddPoint(PlottedPoint newPoint, ContactTypes contactType)
         {
             if(PlottedPoints == null)
             {
-                PlottedPoints = new SortedList<Guid, RwrPoint>();
+                PlottedPoints = new SortedList<Guid, PlottedPoint>();
             }
             if (!PlottedPoints.ContainsKey(newPoint.UniqueId))
             {

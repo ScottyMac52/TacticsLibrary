@@ -7,12 +7,12 @@ using TacticsLibrary.Enums;
 
 namespace TacticsLibrary.tests.Mocks
 {
-    public class MockRwrReceiver : IRwrReceiver
+    public class MockRwrReceiver : IRadar
     {
         public Point BullsEye { get => GetBullsEye?.Invoke() ?? new Point(0, 0); set => SetBullsEye?.Invoke(value); }
         public float CenterPositionX { get => GetCenterPositionX?.Invoke() ?? 0F; set => SetCenterPositionX?.Invoke(value); }
         public float CenterPositionY { get => GetCenterPositionY?.Invoke() ?? 0F; set => SetCenterPositionY?.Invoke(value); }
-        public SortedList<Guid, RwrPoint> PlottedPoints => new SortedList<Guid, RwrPoint>();
+        public SortedList<Guid, PlottedPoint> PlottedPoints => new SortedList<Guid, PlottedPoint>();
         public float Radius { get => GetRadius?.Invoke() ?? 0F; set => SetRadius(value); }
         public int RangeRings { get => GetRangeRings?.Invoke() ?? 0; set => SetRangeRings?.Invoke(value); }
         public float RingSep { get => GetRingSep?.Invoke() ?? 0F; set => SetRingSep(value); }
@@ -31,11 +31,11 @@ namespace TacticsLibrary.tests.Mocks
         public Action<int> SetRangeRings { get; set; }
         public Action<float> SetRingSep { get; set; }
 
-        public Action<RwrPoint, ContactTypes> MockAddPoint { get; set; }
+        public Action<PlottedPoint, ContactTypes> MockAddPoint { get; set; }
 
-        public Func<ReferencePositions, double, double, double, int, int, ContactTypes, RwrPoint> MockPlotContact { get; set; }
+        public Func<ReferencePositions, double, double, double, int, int, ContactTypes, PlottedPoint> MockPlotContact { get; set; }
 
-        public void AddPoint(RwrPoint newPoint, ContactTypes contactType)
+        public void AddPoint(PlottedPoint newPoint, ContactTypes contactType)
         {
             MockAddPoint?.Invoke(newPoint, contactType);
         }
@@ -45,7 +45,7 @@ namespace TacticsLibrary.tests.Mocks
             // No action for Mocked 
         }
 
-        public RwrPoint PlotContact(ReferencePositions refPos, double radius, double degrees, double altitude, int speed, int course, ContactTypes contactType)
+        public PlottedPoint PlotContact(ReferencePositions refPos, double radius, double degrees, double altitude, int speed, int course, ContactTypes contactType)
         {
             return MockPlotContact(refPos, radius, degrees, altitude, speed, course, contactType);            
         }

@@ -10,7 +10,7 @@ using TacticsLibrary.Extensions;
 
 namespace TacticsLibrary.DrawObjects
 {
-    public class RwrPoint : Control, IVisibleObjects, IEquatable<RwrPoint>
+    public class PlottedPoint : Control, IVisibleObjects, IEquatable<PlottedPoint>
     {
         public const int POSITION_OFFSET = 10;
         public const double VELOCITY_VECTOR_TIME = 10.00;
@@ -47,7 +47,7 @@ namespace TacticsLibrary.DrawObjects
             UpdatePending?.Invoke(this, e);
         }
 
-        public RwrPoint(Point ownShip, Point bullsEye, Point homePlate, Point position, double altitude, ContactTypes contactType, float course = 0F, int speed = 0, double heading = 0.00)
+        public PlottedPoint(Point ownShip, Point bullsEye, Point homePlate, Point position, double altitude, ContactTypes contactType, float course = 0F, int speed = 0, double heading = 0.00)
         {
             OwnShip = ownShip;
             BullsEye = bullsEye;
@@ -79,7 +79,7 @@ namespace TacticsLibrary.DrawObjects
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(RwrPoint other)
+        public bool Equals(PlottedPoint other)
         {
             return Position == other.Position;
         }
