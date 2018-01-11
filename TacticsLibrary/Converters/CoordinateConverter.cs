@@ -28,6 +28,34 @@ namespace TacticsLibrary.Converters
             return new PolarCoordinate() { Radius = radius, Degrees = theta };
         }
 
+        public static Point GetRelativePosition(Point plottedPoint, Rectangle viewPortExtent)
+        {
+            var xOffset = 0;
+            var yOffset = 0;
+            var actualResult = plottedPoint;
+
+            if (actualResult.X <= viewPortExtent.Width / 2)
+            {
+                xOffset = -1 * (viewPortExtent.Width / 2);
+            }
+            else
+            {
+                xOffset = actualResult.X + (viewPortExtent.Width / 2);
+            }
+
+            if (actualResult.Y >= viewPortExtent.Height / 2)
+            {
+                yOffset = -1 * (viewPortExtent.Height / 2);
+            }
+            else
+            {
+                yOffset = actualResult.Y + viewPortExtent.Height / 2;
+            }
+
+            actualResult.Offset(xOffset, yOffset);
+            return actualResult;
+        }
+
         public static Point CalculatePointFromDegrees(Point offSet, PolarCoordinate polarRef)
         {
             return CalculatePointFromDegrees(offSet, polarRef.Radius, polarRef.Degrees);

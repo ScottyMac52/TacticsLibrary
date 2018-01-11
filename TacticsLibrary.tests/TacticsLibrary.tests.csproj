@@ -52,6 +52,7 @@
     <Compile Include="Mocks\MockRwrReceiver.cs" />
     <Compile Include="CoordinateConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RelativeCoordinateTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
