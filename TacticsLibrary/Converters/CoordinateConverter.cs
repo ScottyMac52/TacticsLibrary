@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TacticsLibrary.Extensions;
 using TacticsLibrary.TrackingObjects;
 
 namespace TacticsLibrary.Converters
@@ -28,31 +29,34 @@ namespace TacticsLibrary.Converters
             return new PolarCoordinate() { Radius = radius, Degrees = theta };
         }
 
+        /// <summary>
+        /// Gets the relative point inside of the viewport represented by the plotted Point
+        /// </summary>
+        /// <param name="plottedPoint">Coord inate absolute position</param>
+        /// <param name="viewPortExtent">Viewport</param>
+        /// <returns>Relative position</returns>
         public static Point GetRelativePosition(Point plottedPoint, Rectangle viewPortExtent)
         {
-            var xOffset = 0;
-            var yOffset = 0;
             var actualResult = plottedPoint;
 
-            if (actualResult.X <= viewPortExtent.Width / 2)
+            if(plottedPoint.X >= viewPortExtent.GetCenterWidth())
             {
-                xOffset = -1 * (viewPortExtent.Width / 2);
+                actualResult.X = plottedPoint.X - viewPortExtent.GetCenterWidth(); 
             }
             else
             {
-                xOffset = actualResult.X + (viewPortExtent.Width / 2);
+                actualResult.X = ((-1) * (viewPortExtent.GetCenterWidth())) + plottedPoint.X;
             }
 
-            if (actualResult.Y >= viewPortExtent.Height / 2)
+            if (actualResult.Y >= viewPortExtent.GetCenterHeight())
             {
-                yOffset = -1 * (viewPortExtent.Height / 2);
+                actualResult.Y = -1 * (plottedPoint.Y - viewPortExtent.GetCenterHeight());
             }
             else
             {
-                yOffset = actualResult.Y + viewPortExtent.Height / 2;
+                var yOffset = actualResult.Y + viewPortExtent.GetCenterHeight();
             }
 
-            actualResult.Offset(xOffset, yOffset);
             return actualResult;
         }
 

@@ -30,8 +30,8 @@ namespace TacticsLibrary
 
             //AddRandomPlots(RandomNumberGen.Next(10));
 
-            var friendly = ThreatWarningReceiver.PlotContact(new Point(plotPanel.Width / 2,plotPanel.Height / 2), 360, 100, 20000, 36000, 135, ContactTypes.AirEnemy);
-            var missile = ThreatWarningReceiver.PlotContact(friendly.Position, 180, 250, 20000, 360000, 135, ContactTypes.MissileMRM);
+            //var friendly = ThreatWarningReceiver.PlotContact(new Point(plotPanel.Width / 2,plotPanel.Height / 2), 360, 100, 20000, 36000, 135, ContactTypes.AirEnemy);
+            //var missile = ThreatWarningReceiver.PlotContact(friendly.Position, 180, 250, 20000, 360000, 135, ContactTypes.MissileMRM);
 
             plotPanel.Invalidate();
         }

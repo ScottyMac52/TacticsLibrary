@@ -60,6 +60,7 @@
     <Compile Include="Enums\ReferencePositions.cs" />
     <Compile Include="Extensions\GraphicsExtensions.cs" />
     <Compile Include="Extensions\NavigationExtensions.cs" />
+    <Compile Include="Extensions\RectangleExtensions.cs" />
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
