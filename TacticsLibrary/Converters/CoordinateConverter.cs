@@ -11,120 +11,163 @@ namespace TacticsLibrary.Converters
 {
     public class CoordinateConverter
     {
-        public const double OFFSET_THETA = -90.00;
         public const int ROUND_DIGITS = 4;
-
-        public static PolarCoordinate CalculateDegreesFromPoint(Point offset, Point refPoint)
-        {
-            // Add the offset
-            // refPoint.Offset(offset);
-
-            // First we need to calulate what R is
-            var radius = Math.Round(Math.Sqrt((refPoint.X * refPoint.X) + (refPoint.Y * refPoint.Y)), ROUND_DIGITS);
-
-            // Calculate theta in degrees
-            // Guard against division by zero
-            var theta = GetAngleFromSides(radius, refPoint.X, refPoint.Y, ROUND_DIGITS);
-
-            return new PolarCoordinate() { Radius = radius, Degrees = theta };
-        }
+        public const double NORTH = 360.00;
+        public const double NORTH_PRIME = 0.00;
+        public const double SOUTH = 180.00;
+        public const double EAST = 90.00;
+        public const double WEST = 270.00;
+        public const double NEGATIVE = -1.00;
 
         /// <summary>
-        /// Gets the relative point inside of the viewport represented by the plotted Point
+        /// Converts a Polar Coordinate into a Point
         /// </summary>
-        /// <param name="plottedPoint">Coord inate absolute position</param>
-        /// <param name="viewPortExtent">Viewport</param>
-        /// <returns>Relative position</returns>
-        public static Point GetRelativePosition(Point plottedPoint, Rectangle viewPortExtent)
+        /// <param name="polarCoord"></param>
+        /// <returns><see cref="Point"/></returns>
+        public static Point GetPointFromPolarCoordinate(PolarCoordinate polarCoord)
         {
-            var actualResult = plottedPoint;
+            var sinFactor = 1.00;
+            var cosFactor = 1.00;
+            var measuredAngle = 0.00;
 
-            if(plottedPoint.X >= viewPortExtent.GetCenterWidth())
+            // Have to offset Degrees back to normal based on Quadrant
+            // Quadrant 1
+            if (polarCoord.Degrees >= NORTH_PRIME && polarCoord.Degrees <= EAST)
             {
-                actualResult.X = plottedPoint.X - viewPortExtent.GetCenterWidth(); 
+                measuredAngle = EAST - polarCoord.Degrees;
+            }
+            // Quandrant 4, y is negative so sin is negative
+            else if(polarCoord.Degrees > EAST && polarCoord.Degrees <= SOUTH)
+            {
+                measuredAngle = SOUTH - polarCoord.Degrees;
+                sinFactor = NEGATIVE;
+            }
+            // Quadrant 3
+            else if(polarCoord.Degrees > SOUTH && polarCoord.Degrees <= WEST)
+            {
+                measuredAngle = WEST - polarCoord.Degrees;
+                sinFactor = NEGATIVE;
+                cosFactor = NEGATIVE;
+            }
+            // Quadrant 2
+            else if(polarCoord.Degrees > WEST && polarCoord.Degrees <= NORTH)
+            {
+                measuredAngle = NORTH - polarCoord.Degrees;
+                cosFactor = NEGATIVE;
             }
             else
             {
-                actualResult.X = ((-1) * (viewPortExtent.GetCenterWidth())) + plottedPoint.X;
+                throw new ArgumentException($"{polarCoord} is not an acceptable polar coordinate and cannot be converted.");
             }
 
-            if (actualResult.Y >= viewPortExtent.GetCenterHeight())
-            {
-                actualResult.Y = -1 * (plottedPoint.Y - viewPortExtent.GetCenterHeight());
-            }
-            else
-            {
-                var yOffset = actualResult.Y + viewPortExtent.GetCenterHeight();
-            }
-
-            return actualResult;
-        }
-
-        public static Point CalculatePointFromDegrees(Point offSet, PolarCoordinate polarRef)
-        {
-            return CalculatePointFromDegrees(offSet, polarRef.Radius, polarRef.Degrees);
+            var sin = Math.Abs(Math.Sin(DegreesToRadians(measuredAngle))) * sinFactor;
+            var cos = Math.Abs(Math.Cos(DegreesToRadians(measuredAngle))) * cosFactor;
+            var x = Math.Round(polarCoord.Radius * cos, ROUND_DIGITS);
+            var y = Math.Round(polarCoord.Radius * sin, ROUND_DIGITS);
+            return new Point((int) Math.Round(x, ROUND_DIGITS), (int) Math.Round(y, ROUND_DIGITS));
         }
 
         /// <summary>
-        /// Gets the adjacent angle theta from the 3 sides
+        /// Converts a plotted point relative to (0,0) on an X/Y axis
         /// </summary>
-        /// <param name="side1"></param>
-        /// <param name="side2"></param>
-        /// <param name="side3"></param>
-        /// <param name="roundingDigits"></param>
+        /// <param name="plottedPoint">The point to plot</param>
+        /// <returns>The <see cref="PolarCoordinate"/> that matches the position</returns>
+        public static PolarCoordinate GetPolarCoordinateFromPoint(Point plottedPoint)
+        {
+            var distance = 0.00;
+            var angleC = 0.00;
+            var offSetAngle = 0.00;
+
+            if (plottedPoint.Y == 0 || plottedPoint.X == 0)
+            {
+                if (plottedPoint.X < 0)
+                {
+                    offSetAngle = WEST;
+                }
+                else if (plottedPoint.X > 0)
+                {
+                    offSetAngle = EAST;
+                }
+                else
+                {
+                    if (plottedPoint.Y < 0)
+                    {
+                        offSetAngle = SOUTH;
+                    }
+                    else if (plottedPoint.Y >= 0)
+                    {
+                        offSetAngle = NORTH;
+                    }
+                }
+            }
+            else
+            {
+                var adjSqr = (plottedPoint.X * plottedPoint.X);
+                var oppSqr = (plottedPoint.Y * plottedPoint.Y);
+                var hypSqr = adjSqr + oppSqr;
+
+                // First calculate the hyp, which is the range or distance
+                distance = Math.Sqrt(hypSqr);
+
+                var sine = plottedPoint.Y / distance;
+                var cos = plottedPoint.X / distance;
+                var tan = plottedPoint.X / plottedPoint.Y;
+
+                // Test for Quadrant 1 all pos
+                if (!IsNegative(sine) && !IsNegative(cos) && !IsNegative(tan))
+                {
+                    // Angle is true angle from coordinate (0,0)
+                    // Final result is 90 - true angle
+                    angleC = Math.Atan(plottedPoint.Y / plottedPoint.X);
+                    offSetAngle = EAST;
+                }
+                // Test for Quandrant 2 sine pos
+                else if (!IsNegative(sine) && IsNegative(cos) && IsNegative(tan))
+                {
+                    angleC = Math.Asin(plottedPoint.Y / distance);
+                    offSetAngle = NORTH;
+                }
+                // Test for Quadrant 3 tan pos
+                else if (IsNegative(sine) && IsNegative(cos) && !IsNegative(tan))
+                {
+                    angleC = Math.Atan(plottedPoint.Y / plottedPoint.X);
+                    offSetAngle = WEST;
+                }
+                // Test for Quandrant 4 cos pos
+                else if (IsNegative(sine) && !IsNegative(cos) && IsNegative(tan))
+                {
+                    angleC = Math.Acos(plottedPoint.X / distance);
+                    offSetAngle = SOUTH;
+                }
+            }
+
+            var angleTheta = offSetAngle - RadianToDegree(angleC);
+            return new PolarCoordinate() { Degrees = angleTheta, Radius = distance };
+        }
+
+        /// <summary>
+        /// Negative test for a double
+        /// </summary>
+        /// <param name="val"></param>
         /// <returns></returns>
-        public static double GetAngleFromSides(double side1, double side2, double side3, int roundingDigits = 2)
+        private static bool IsNegative(double val)
         {
-            // this defines the number two
-            const int TWO = 2;
-            const int TO_DEGREES = 180;
-            // this squares the first side
-            double side1Squared = side1 * side1;
-            // this squares the second side
-            double side2Squared = side2 * side2;
-            // this squares the third side
-            double side3Squared = side3 * side3;
-            // this uses formula cos C = (a2 + b2 − c2)/ 2ab
-            double toGetCosOfangle = (((side1Squared + side2Squared) - side3Squared)) / (TWO * side1 * side2);
-
-            // this takes the inverse cosine to get angle in radians
-            double angle1 = Math.Acos(toGetCosOfangle);
-            // this converts the angle to degrees
-            double angle1Degrees = angle1 * (TO_DEGREES / Math.PI);
-            // this rounds the angle
-            double angle1Rounded = Math.Round(angle1Degrees, roundingDigits);
-            // this returns the angle from the method
-            return angle1Rounded;
+            return val < 0;
+        }
+             
+        /// <summary>
+        /// Converts radians to degrees
+        /// </summary>
+        /// <param name="radians"></param>
+        /// <returns>degrees</returns>
+        private static double RadianToDegree(double radians)
+        {
+            return radians * (180 / Math.PI);
         }
 
-
-        public static Point CalculatePointFromDegrees(Point offset, double radius, double degrees)
+        private static double DegreesToRadians(double degrees)
         {
-            // Subtract the 90 degree offset to account for conversion from polar to compass coordinates
-            var theta = degrees + OFFSET_THETA;
-            // Calculate the degrees into Radians 
-            var radians = theta * (Math.PI / 180);
-
-            // X is radius * Cos(theta in radians)
-            var xValue = radius * Math.Cos(radians);
-            // Y is radius * Sin(theta in radians)
-            var yValue = radius * Math.Sin(radians);
-
-            // Account for specified offset
-            Int32 x = offset.X + (int)Math.Round(xValue, 0);
-            Int32 y = offset.Y + (int)Math.Round(yValue, 0);
-
-            return new Point(x, y);
-        }
-
-        private double DegreeToRadian(double angle)
-        {
-            return Math.PI * angle / 180.0;
-        }
-
-        private double RadianToDegree(double angle)
-        {
-            return angle * (180.0 / Math.PI);
+            return degrees * (Math.PI / 180.00);
         }
 
     }

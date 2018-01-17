@@ -49,6 +49,7 @@
     <Compile Include="Adapters\GraphicsAdapter.cs" />
     <Compile Include="Adapters\IGraphics.cs" />
     <Compile Include="Converters\CoordinateConverter.cs" />
+    <Compile Include="Converters\PositionConverter.cs" />
     <Compile Include="DrawObjects\ICoordShifter.cs" />
     <Compile Include="DrawObjects\IRadar.cs" />
     <Compile Include="DrawObjects\IVisibleObjects.cs" />

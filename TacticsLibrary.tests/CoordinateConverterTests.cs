@@ -1,157 +1,134 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TacticsLibrary.TrackingObjects;
-using TacticsLibrary.Converters;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Drawing;
+using TacticsLibrary.Extensions;
 
 namespace TacticsLibrary.tests
 {
+    /// <summary>
+    /// Test fixture that checks the bidirectional conversion between cartesian and polar coordinates
+    /// </summary>
     [TestClass]
     public class CoordinateConverterTests
     {
+        #region Quandrant 1 Tests
 
-        // Test Passed
         [TestMethod]
-        [TestCategory("Unit")]
-        public void TestAngleDeterminiationAllZeros()
+        public void TestAngleFromPointUsingRelativeCoordsQuandrant1()
         {
             // ARRANGE
-            var side1 = 0D;
-            var side2 = 0D;
-            var side3 = 0D;
-            var expectedAngle = double.NaN;
+            var testPoint = new Point(50, 50);
+            var expectedResult = 45.00;
 
-            // ACT
-            var actualAngle = CoordinateConverter.GetAngleFromSides(side1, side2, side3);
-
-            // ASSERT
-            Assert.AreEqual(expectedAngle, actualAngle, $"Expected Angle {expectedAngle}° Got {actualAngle}°");
+            // ACT & ASSERT
+            ActAndAssertOnConversion(testPoint, expectedResult);
         }
 
-        // Test Passed
+
         [TestMethod]
-        [TestCategory("Unit")]
-        public void TestAngleDeterminationForX5Y3()
+        public void TestAngleFromPointUsingRelativeCoordsQuandrant1_1()
         {
             // ARRANGE
-            var side1 = 5.830952D;
-            var side2 = 5D;
-            var side3 = 3D;
-            var expectedAngle = 30.96D;
+            var testPoint = new Point(10, 10);
+            var expectedResult = 45.00;
 
-            // ACT
-            var actualAngle = CoordinateConverter.GetAngleFromSides(side1, side2, side3);
-
-            // ASSERT
-            Assert.AreEqual(expectedAngle, actualAngle, $"Expected Angle {expectedAngle}° Got {actualAngle}°");
+            // ACT & ASSERT
+            ActAndAssertOnConversion(testPoint, expectedResult);
         }
+
+        #endregion Quandrant 1 Tests
+
+        #region Quandrant 2 Tests
+
+
+        [TestMethod]
+        public void TestAngleFromPointUsingRelativeCoordsQuandrant2()
+        {
+            // ARRANGE
+            var testPoint = new Point(-10, 10);
+            var expectedResult = 315.00;
+
+            // ACT & ASSERT
+            ActAndAssertOnConversion(testPoint, expectedResult);
+        }
+
+        [TestMethod]
+        public void TestAngleFromPointUsingRelativeCoordsQuandrant2_1()
+        {
+            // ARRANGE
+            var testPoint = new Point(-150, 56);
+            var expectedResult = 339.5277;
+
+            // ACT & ASSERT
+            ActAndAssertOnConversion(testPoint, expectedResult);
+        }
+
+        #endregion Quandrant 2 Tests
+
+        #region Quandrant 3 Tests
+
+        [TestMethod]
+        public void TestAngleFromPointUsingRelativeCoordsQuandrant3()
+        {
+            // ARRANGE
+            var testPoint = new Point(-150, -150);
+            var expectedResult = 225.00;
+
+            // ACT & ASSERT
+            ActAndAssertOnConversion(testPoint, expectedResult);
+        }
+
+        [TestMethod]
+        public void TestAngleFromPointUsingRelativeCoordsQuandrant3_1()
+        {
+            // ARRANGE
+            var testPoint = new Point(-225, -225);
+            var expectedResult = 225.00;
+
+            // ACT & ASSERT
+            ActAndAssertOnConversion(testPoint, expectedResult);
+        }
+
+        #endregion Quandrant 3 Tests
+
+        #region Quandrant 4 Tests
         
-
         [TestMethod]
-        public void EnsureThat90DegreesIsConverted()
+        public void TestAngleFromPointUsingRelativeCoordsQuandrant4()
         {
             // ARRANGE
-            var expectedResult = new Point(10, 0);
-            var offset = new Point(0, 0);
-            var polarCoord = new PolarCoordinate() { Degrees = 90.00, Radius = 10 };
+            var testPoint = new Point(150, -150);
+            var expectedResult = 135.00;
 
-            // ACT
-            var refPoint = CoordinateConverter.CalculatePointFromDegrees(offset, polarCoord.Radius, polarCoord.Degrees);
-
-            // ASSERT
-            Assert.IsTrue(refPoint == expectedResult, "There was a conversion error for 90°!");
+            // ACT & ASSERT
+            ActAndAssertOnConversion(testPoint, expectedResult);
         }
 
         [TestMethod]
-        public void EnsureThatPointIsConvertedToSelectedDegrees()
+        public void TestAngleFromPointUsingRelativeCoordsQuandrant4_1()
         {
             // ARRANGE
-            var testPoint = new Point(5, 3);
-            var offset = new Point(0, 0);
-            var expectedResult = new PolarCoordinate() { Degrees = 30.96377, Radius = 5.831 };
+            var testPoint = new Point(225, -225);
+            var expectedResult = 135.00;
 
-            // ACT
-            var polarRef = CoordinateConverter.CalculateDegreesFromPoint(offset, testPoint);
-
-            // ASSERT
-            Assert.IsTrue(polarRef.Equals(expectedResult), $"There was a conversion error for {testPoint} - expected: {expectedResult} Got {polarRef}");
+            // ACT & ASSERT
+            ActAndAssertOnConversion(testPoint, expectedResult);
         }
 
-        [TestMethod]
-        public void EnsureThatPointIsConvertedTo45()
+        #endregion Quandrant 4 Tests
+
+        #region Helpers
+
+        private void ActAndAssertOnConversion(Point plottedPoint, double expectedDegrees)
         {
-            // ARRANGE
-            var testPoint = new Point(5, 5);
-            var offset = new Point(0, 0);
-            var expectedResult = new PolarCoordinate() { Degrees = 44.9997, Radius = 7.0711 };
-
             // ACT
-            var polarRef = CoordinateConverter.CalculateDegreesFromPoint(offset, testPoint);
+            var actualResult = plottedPoint.GetPolarCoord();
+            var resultPoint = actualResult.GetPoint();
 
             // ASSERT
-            Assert.IsTrue(polarRef.Equals(expectedResult), $"There was a conversion error for {testPoint} - expected: {expectedResult} Got {polarRef}");
+            Assert.AreEqual(expectedDegrees, actualResult.Degrees);
+            Assert.AreEqual(plottedPoint, resultPoint);
         }
 
-        [TestMethod]
-        public void EnsureThat345TriangleIsConverted()
-        {
-            // ARRANGE
-            var testPoint = new Point(4, 3);
-            var offset = new Point(0, 0);
-            var expectedResult = new PolarCoordinate() { Degrees = 36.8699, Radius = 5 };
-
-            // ACT
-            var polarRef = CoordinateConverter.CalculateDegreesFromPoint(offset, testPoint);
-
-            // ASSERT
-            Assert.IsTrue(polarRef.Equals(expectedResult), $"There was a conversion error for {testPoint} - expected: {expectedResult} Got {polarRef}");
-        }
-
-        [TestMethod]
-        public void EnsureThat360DegreesAreConverted()
-        {
-            // ARRANGE
-            var testPoint = new Point(0, 5);
-            var offset = new Point(0, 0);
-            var expectedResult = new PolarCoordinate() { Degrees = 90, Radius = 5 };
-
-            // ACT
-            var polarRef = CoordinateConverter.CalculateDegreesFromPoint(offset, testPoint);
-
-            // ASSERT
-            Assert.IsTrue(polarRef.Equals(expectedResult), $"There was a conversion error for {testPoint} - expected: {expectedResult} Got {polarRef}");
-        }
-
-
-        public void EnsureThatPointIsConvertedTo180()
-        {
-            // ARRANGE
-            var testPoint = new Point(0, -20);
-            var offset = new Point(0, 0);
-            var expectedResult = new PolarCoordinate() { Degrees = 180.00, Radius = 20 };
-
-            // ACT
-            var polarRef = CoordinateConverter.CalculateDegreesFromPoint(offset, testPoint);
-
-            // ASSERT
-            Assert.IsTrue(polarRef.Equals(expectedResult), $"There was a conversion error for {testPoint} - expected: {expectedResult} Got {polarRef}");
-        }
-
-
-
-        [TestMethod]
-        public void EnsureThat360DegreesIsConverted()
-        {
-            // ARRANGE
-            var expectedResult = new Point(0, -10);
-            var offset = new Point(0, 0);
-            var polarCoord = new PolarCoordinate() { Degrees = 360.00, Radius = 10 };
-
-            // ACT
-            var refPoint = CoordinateConverter.CalculatePointFromDegrees(offset, polarCoord.Radius, polarCoord.Degrees);
-
-            // ASSERT
-            Assert.IsTrue(refPoint == expectedResult, "There was a conversion error!");
-        }
+        #endregion Helpers
     }
 }

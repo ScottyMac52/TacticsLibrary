@@ -5,24 +5,38 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TacticsLibrary.Converters;
+using TacticsLibrary.TrackingObjects;
 
 namespace TacticsLibrary.Extensions
 {
     public static class RectanglePointExtensions
     {
+        public const int HALF = 2;
+
         public static int GetCenterWidth(this Rectangle targetRect)
         {
-            return targetRect.Width / 2;
+            return targetRect.Width / HALF;
         }
 
         public static int GetCenterHeight(this Rectangle targetRect)
         {
-            return targetRect.Height / 2;
+            return targetRect.Height / HALF;
         }
 
         public static Point GetRelativePosition(this Point plottedPoint, Rectangle viewPort)
         {
-            return CoordinateConverter.GetRelativePosition(plottedPoint, viewPort);
+            return PositionConverter.GetRelativePosition(plottedPoint, viewPort);
+        }
+
+        public static PolarCoordinate GetPolarCoord(this Point plottedPoint)
+        {
+            return CoordinateConverter.GetPolarCoordinateFromPoint(plottedPoint);
+        }
+
+        public static Point GetPoint(this PolarCoordinate polarCoord)
+        {
+            return CoordinateConverter.GetPointFromPolarCoordinate(polarCoord);
+
         }
 
     }

@@ -103,15 +103,13 @@ namespace TacticsLibrary.DrawObjects
                 var offset = Position;
 
                 // Get the new position based on course and distance traveled
-                var newPos = 
+                //var newPos = CoordinateConverter.CalculatePointFromDegrees(offset, distance, Course);
 
-                CoordinateConverter.CalculatePointFromDegrees(offset, distance, Course);
+               //  System.Diagnostics.Debug.Print($"Contact {UniqueId}, Type:{ContactType} Speed:{Speed} knts Course:{Course}° from Position:({Position.X}, {Position.Y}) to ({newPos.X}, {newPos.Y})");
 
-                System.Diagnostics.Debug.Print($"Contact {UniqueId}, Type:{ContactType} Speed:{Speed} knts Course:{Course}° from Position:({Position.X}, {Position.Y}) to ({newPos.X}, {newPos.Y})");
+                //Position = newPos;
 
-                Position = newPos;
-
-                PolarPosit = CoordinateConverter.CalculateDegreesFromPoint(OwnShip, Position);
+                //PolarPosit = CoordinateConverter.CalculateDegreesFromPoint(OwnShip, Position);
                 RefreshStatus();
                 // Notify the change in Position
                 OnUpdatePending(new EventArgs());
@@ -151,9 +149,9 @@ namespace TacticsLibrary.DrawObjects
                 offsetPoint.Y = 0;
             }
 
-            var polarCoord = CoordinateConverter.CalculateDegreesFromPoint(OwnShip, offsetPoint);
+            //var polarCoord = CoordinateConverter.CalculateDegreesFromPoint(OwnShip, offsetPoint);
 
-            ReferenceText = $"{Position} -> {polarCoord}";
+            //ReferenceText = $"{Position} -> {polarCoord}";
         }
 
         public void Draw(IGraphics g)
@@ -177,8 +175,8 @@ namespace TacticsLibrary.DrawObjects
             // Get the new position based on course and distance traveled
             // Now calculate the contacts movement in that timespan
             var distance = VELOCITY_VECTOR_TIME * (Speed / SECONDS_PER_HOUR);
-            var newPos = CoordinateConverter.CalculatePointFromDegrees(Position, distance, Course);
-            g.DrawLine(Pens.Green, Position, newPos);
+            //var newPos = CoordinateConverter.CalculatePointFromDegrees(Position, distance, Course);
+            //g.DrawLine(Pens.Green, Position, newPos);
         }
 
         public void DrawContact(IGraphics g)

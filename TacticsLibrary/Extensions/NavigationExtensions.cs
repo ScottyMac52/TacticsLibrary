@@ -9,16 +9,14 @@ using TacticsLibrary.TrackingObjects;
 
 namespace TacticsLibrary.Extensions
 {
+    // TODO : Need to work on the Navigation Extensions
     public static class NavigationExtensions
     {
-        public static Point GetCartesianCoordinates(this PolarCoordinate polarRef, Point offSet)
-        {
-            return CoordinateConverter.CalculatePointFromDegrees(offSet, polarRef.Radius, polarRef.Degrees);
-        }
+
 
         public static PolarCoordinate GetPolarCoordinates(this Point point, Point offSet)
         {
-            return CoordinateConverter.CalculateDegreesFromPoint(offSet, point);
+            return CoordinateConverter.GetPolarCoordinateFromPoint(point);
         }
 
     }

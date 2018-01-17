@@ -98,9 +98,10 @@ namespace TacticsLibrary.DrawObjects
         /// <returns></returns>
         public PlottedPoint PlotContact(Point offset, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
         {
-            var plotPoint = CalculatePointFromDegrees(offset, radius, degrees);
-            var newPoint = new PlottedPoint(OwnShip, BullsEye, HomePlate, plotPoint, altitude, contactType, course, speed);
-            AddPoint(newPoint, contactType);
+            PlottedPoint newPoint = null;
+            //var plotPoint = CalculatePointFromDegrees(offset, radius, degrees);
+            //var newPoint = new PlottedPoint(OwnShip, BullsEye, HomePlate, plotPoint, altitude, contactType, course, speed);
+            //AddPoint(newPoint, contactType);
             return newPoint;
         }
 
@@ -132,24 +133,7 @@ namespace TacticsLibrary.DrawObjects
 
             return PlotContact(offset, radius, degrees, altitude, speed, course, contactType);
         } 
-
-        public PolarCoordinate CalculateDegreesFromPoint(Point refPoint)
-        {
-            return CoordinateConverter.CalculateDegreesFromPoint(OwnShip, refPoint);
-        }
-
-        /// <summary>
-        /// Converts the specified polar coordinate into compass based cartesian coordinates
-        /// </summary>
-        /// <param name="offset">The origin for the to get the distance and degrees from</param>
-        /// <param name="radius">Distance in units</param>
-        /// <param name="degrees">Compass degrees in degrees</param>
-        /// <returns><see cref="Point"/> that references the location</returns>
-        public Point CalculatePointFromDegrees(Point offset, double radius, double degrees)
-        {
-            return CoordinateConverter.CalculatePointFromDegrees(offset, radius, degrees);
-        }
-
+         
         /// <summary>
         /// Adds a point as a type and class of contact 
         /// </summary>
