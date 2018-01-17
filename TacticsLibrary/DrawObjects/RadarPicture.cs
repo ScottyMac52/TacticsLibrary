@@ -98,10 +98,10 @@ namespace TacticsLibrary.DrawObjects
         /// <returns></returns>
         public PlottedPoint PlotContact(Point offset, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
         {
-            PlottedPoint newPoint = null;
-            //var plotPoint = CalculatePointFromDegrees(offset, radius, degrees);
-            //var newPoint = new PlottedPoint(OwnShip, BullsEye, HomePlate, plotPoint, altitude, contactType, course, speed);
-            //AddPoint(newPoint, contactType);
+            var polarCoord = new PolarCoordinate() { Degrees = degrees, Radius = radius };
+            var plotPoint = polarCoord.GetPoint();
+            var newPoint = new PlottedPoint(OwnShip, BullsEye, HomePlate, plotPoint, altitude, contactType, course, speed);
+            AddPoint(newPoint, contactType);
             return newPoint;
         }
 
