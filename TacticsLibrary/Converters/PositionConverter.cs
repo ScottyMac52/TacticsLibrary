@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TacticsLibrary.Extensions;
 
 namespace TacticsLibrary.Converters
 {
-    public class PositionConverter
+    public sealed class PositionConverter
     {
+        public const int NEGATIVE = -1;
+
         /// <summary>
         /// Gets the relative point inside of the viewport represented by the plotted Point
         /// </summary>
@@ -26,7 +24,7 @@ namespace TacticsLibrary.Converters
             }
             else
             {
-                actualResult.X = ((-1) * (viewPortExtent.GetCenterWidth())) - plottedPoint.X;
+                actualResult.X = ((NEGATIVE) * (viewPortExtent.GetCenterWidth())) - plottedPoint.X;
             }
 
             actualResult.Y = viewPortExtent.GetCenterHeight() - plottedPoint.Y;
@@ -34,6 +32,28 @@ namespace TacticsLibrary.Converters
             return actualResult;
         }
 
+        /// <summary>
+        /// Converts a position relative to (0,0) in the view port to a position relative to (-MaxX, MaxY)
+        /// </summary>
+        /// <param name="relativePosition">The relative position from (0,0) in the ViewPortExtent</param>
+        /// <param name="viewPortExtent">The ViewPortExtent <seealso cref="Rectangle"/></param>
+        /// <returns>Absolute Postition</returns>
+        public static Point GetAbsolutePosition(Point relativePosition, Rectangle viewPortExtent)
+        {
+            var actualResult = relativePosition;
 
+            if(relativePosition.X >= viewPortExtent.GetCenterWidth())
+            {
+                actualResult.X = viewPortExtent.GetCenterWidth() + relativePosition.X;
+            }
+            else
+            {
+                actualResult.X = viewPortExtent.GetCenterWidth() - Math.Abs(relativePosition.X);
+            }
+
+            actualResult.Y = viewPortExtent.GetCenterHeight() - relativePosition.Y;
+
+            return actualResult;
+        }
     }
 }

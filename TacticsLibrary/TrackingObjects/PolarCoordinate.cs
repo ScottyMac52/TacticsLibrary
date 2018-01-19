@@ -18,6 +18,12 @@ namespace TacticsLibrary.TrackingObjects
         private double _radius;
         private double _degrees;
 
+        public PolarCoordinate(double angleTheta, double z)
+        {
+            _degrees = angleTheta;
+            _radius = z;
+        }
+
         public double Radius { get { return GetRoundedValue(_radius); } set { _radius = value; } }
         public double Degrees { get { return GetRoundedValue(_degrees); } set { _degrees = value; } }
 

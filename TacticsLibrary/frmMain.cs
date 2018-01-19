@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using TacticsLibrary.Adapters;
+using TacticsLibrary.Converters;
 using TacticsLibrary.DrawObjects;
 using TacticsLibrary.Enums;
 using TacticsLibrary.TrackingObjects;
@@ -66,7 +67,7 @@ namespace TacticsLibrary
                 var randomRange = RandomNumberGen.NextDouble() * rMax;
                 var randomBearing = RandomNumberGen.Next(360);
 
-                randPlots.Add(new PolarCoordinate() { Degrees = randomBearing, Radius = randomRange });
+                randPlots.Add(new PolarCoordinate(randomBearing, randomRange));
             }
 
             return randPlots;
@@ -142,15 +143,18 @@ namespace TacticsLibrary
 
         private void plotPanel_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-        //    ContactTypes contactType = ContactTypes.AirUnknown;
-        //    var typeToPlot = $"{selectType.Text}{selectClass.Text}";
+            ContactTypes contactType = ContactTypes.AirUnknown;
+            var typeToPlot = $"{selectType.Text}{selectClass.Text}";
+            var absolutePosition = new Point(e.X, e.Y);
 
-        //    if(Enum.TryParse(typeToPlot, out contactType))
-        //    {
-        //        var newPoint = new RwrPoint(new Point(e.X, e.Y), 0.00, contactType, decimal.ToInt32(contactCourse.Value), decimal.ToInt32(contactSpeed.Value));
-        //        ThreatWarningReceiver.AddPoint(newPoint, contactType);
-        //        plotPanel.Invalidate();
-        //    }
+            if (Enum.TryParse(typeToPlot, out contactType))
+            {
+                var relativePosition = PositionConverter.GetRelativePosition(absolutePosition, plotPanel.ClientRectangle);
+
+                //var newPoint = new PlottedPoint(new Point(e.X, e.Y), 0.00, contactType, decimal.ToInt32(contactCourse.Value), decimal.ToInt32(contactSpeed.Value));
+                //ThreatWarningReceiver.AddPoint(newPoint, contactType);
+                plotPanel.Invalidate();
+            }
         }
     }
 }

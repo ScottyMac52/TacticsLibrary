@@ -28,6 +28,11 @@ namespace TacticsLibrary.Extensions
             return PositionConverter.GetRelativePosition(plottedPoint, viewPort);
         }
 
+        public static Point GetAbsolutePosition(this Point relativePosition, Rectangle viewPort)
+        {
+            return PositionConverter.GetAbsolutePosition(relativePosition, viewPort);
+        }
+        
         public static PolarCoordinate GetPolarCoord(this Point plottedPoint)
         {
             return CoordinateConverter.GetPolarCoordinateFromPoint(plottedPoint);
