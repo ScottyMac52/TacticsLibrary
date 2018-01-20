@@ -7,6 +7,7 @@ using TacticsLibrary.Adapters;
 using TacticsLibrary.Converters;
 using TacticsLibrary.DrawObjects;
 using TacticsLibrary.Enums;
+using TacticsLibrary.Interfaces;
 using TacticsLibrary.TrackingObjects;
 
 namespace TacticsLibrary
@@ -18,20 +19,20 @@ namespace TacticsLibrary
         int angle = 0;
         int StartAngle = 0;
 
-        protected RadarPicture ThreatWarningReceiver { get; private set; }
+        protected IRadar RadarReceiver { get; private set; }
 
         protected Random RandomNumberGen { get; private set; }
 
         public frmMain()
         {
             InitializeComponent();
-            ThreatWarningReceiver = InitializeRwr();
+            RadarReceiver = InitializeRadar();
 
             RandomNumberGen = new Random((int)DateTime.Now.Ticks);
 
             //AddRandomPlots(RandomNumberGen.Next(10));
 
-            var friendly = ThreatWarningReceiver.PlotContact(new Point(plotPanel.Width / 2,plotPanel.Height / 2), 360, 100, 20000, 36000, 135, ContactTypes.AirEnemy);
+            var friendly = RadarReceiver.PlotContact(new Point(0,0), 360, 100, 20000, 36000, 135, ContactTypes.AirFriendly);
             //var missile = ThreatWarningReceiver.PlotContact(friendly.Position, 180, 250, 20000, 360000, 135, ContactTypes.MissileMRM);
 
             plotPanel.Invalidate();
@@ -53,7 +54,7 @@ namespace TacticsLibrary
                 var course = RandomNumberGen.Next(360);
                 var speed = contactType.ToString().Contains("Air") ? RandomNumberGen.Next(300, 10000) : contactType.ToString().Contains("Missile") ? RandomNumberGen.Next(3000, 100000) : RandomNumberGen.Next(50);
                 var heading = RandomNumberGen.Next(course);
-                ThreatWarningReceiver.PlotContact(ReferencePositions.OwnShip, rp.Degrees, rp.Radius, altitude, speed, course, contactType);
+                RadarReceiver.PlotContact(ReferencePositions.OwnShip, rp.Degrees, rp.Radius, altitude, speed, course, contactType);
             });
 
         }
@@ -96,22 +97,16 @@ namespace TacticsLibrary
         private void PlotPanel_Paint(object sender, PaintEventArgs e)
         {
             var g = new GraphicsAdapter(e.Graphics);
-
-            try
-            {
-                ThreatWarningReceiver.Draw(g);
-            }
-            catch
-            {
-            }
+            RadarReceiver.Draw(g);
         }
 
-        private RadarPicture InitializeRwr()
+        private RadarPicture InitializeRadar()
         {
-            var rwrReceiver = new RadarPicture(new Point(123, 90), new Point(100, 200))
+            var bullsEye = new Point(123, 90);
+            var homePlate = new Point(100, 200);
+
+            var rwrReceiver = new RadarPicture(bullsEye, homePlate, new Size(plotPanel.Width,plotPanel.Height))
             {
-                CenterPositionX = plotPanel.Width / 2,
-                CenterPositionY = plotPanel.Height / 2,
                 Radius = plotPanel.Width / 2,
                 RangeRings = 5,
                 RingSep = 50
@@ -143,17 +138,28 @@ namespace TacticsLibrary
 
         private void plotPanel_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            ContactTypes contactType = ContactTypes.AirUnknown;
-            var typeToPlot = $"{selectType.Text}{selectClass.Text}";
-            var absolutePosition = new Point(e.X, e.Y);
-
-            if (Enum.TryParse(typeToPlot, out contactType))
+            if (e.Button == MouseButtons.Right)
             {
-                var relativePosition = PositionConverter.GetRelativePosition(absolutePosition, plotPanel.ClientRectangle);
+                ContactTypes contactType = ContactTypes.AirUnknown;
+                var typeToPlot = $"{selectType.Text}{selectClass.Text}";
+                var absolutePosition = new Point(e.X, e.Y);
 
-                //var newPoint = new PlottedPoint(new Point(e.X, e.Y), 0.00, contactType, decimal.ToInt32(contactCourse.Value), decimal.ToInt32(contactSpeed.Value));
-                //ThreatWarningReceiver.AddPoint(newPoint, contactType);
-                plotPanel.Invalidate();
+                if (Enum.TryParse(typeToPlot, out contactType))
+                {
+                    var newPoint = new Contact(absolutePosition, 0.00, contactType, decimal.ToInt32(contactCourse.Value), decimal.ToInt32(contactSpeed.Value));
+                    RadarReceiver.AddContact(newPoint, contactType);
+                    plotPanel.Invalidate();
+                }
+            }
+        }
+
+        private void plotPanel_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                var absolutePosition = new Point(e.X, e.Y);
+                var contacts = RadarReceiver.FindContact(absolutePosition, new Size(5, 5));
+                MessageBox.Show($"There were {contacts.Count} contact(s) found.");
             }
         }
     }

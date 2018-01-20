@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using TacticsLibrary.Adapters;
 
-namespace TacticsLibrary.DrawObjects
+namespace TacticsLibrary.Interfaces
 {
     public interface IVisibleObjects
     {

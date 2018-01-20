@@ -11,10 +11,10 @@ namespace TacticsLibrary.Converters
         /// <summary>
         /// Gets the relative point inside of the viewport represented by the plotted Point
         /// </summary>
-        /// <param name="plottedPoint">Coord inate absolute position</param>
-        /// <param name="viewPortExtent">Viewport</param>
+        /// <param name="plottedPoint">Coord inate absolute position <see cref="Point"/></param>
+        /// <param name="viewPortExtent">Viewport <see cref="Size"/></param>
         /// <returns>Relative position</returns>
-        public static Point GetRelativePosition(Point plottedPoint, Rectangle viewPortExtent)
+        public static Point GetRelativePosition(Point plottedPoint, Size viewPortExtent)
         {
             var actualResult = plottedPoint;
 
@@ -35,10 +35,10 @@ namespace TacticsLibrary.Converters
         /// <summary>
         /// Converts a position relative to (0,0) in the view port to a position relative to (-MaxX, MaxY)
         /// </summary>
-        /// <param name="relativePosition">The relative position from (0,0) in the ViewPortExtent</param>
-        /// <param name="viewPortExtent">The ViewPortExtent <seealso cref="Rectangle"/></param>
+        /// <param name="relativePosition">The relative position from (0,0) in the ViewPortExtent <see cref="Point"/></param>
+        /// <param name="viewPortExtent">The ViewPortExtent <seealso cref="Size"/></param>
         /// <returns>Absolute Postition</returns>
-        public static Point GetAbsolutePosition(Point relativePosition, Rectangle viewPortExtent)
+        public static Point GetAbsolutePosition(Point relativePosition, Size viewPortExtent)
         {
             var actualResult = relativePosition;
 

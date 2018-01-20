@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace TacticsLibrary.Adapters
+namespace TacticsLibrary.Interfaces
 {
     public interface IGraphics
     {

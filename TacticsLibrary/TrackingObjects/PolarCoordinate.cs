@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TacticsLibrary.Converters;
+using TacticsLibrary.Interfaces;
 
 namespace TacticsLibrary.TrackingObjects
 {
     /// <summary>
     /// Encapsulates a Polar Coordinate as two doubles Degrees and Radius
     /// </summary>
-    public class PolarCoordinate : IEquatable<PolarCoordinate>, IComparable<PolarCoordinate>
+    public class PolarCoordinate : IEquatable<PolarCoordinate>, IPolarCoordinate
     {
         public const int ROUNDING_DIGITS = 4;
         private double _radius;
@@ -26,11 +20,6 @@ namespace TacticsLibrary.TrackingObjects
 
         public double Radius { get { return GetRoundedValue(_radius); } set { _radius = value; } }
         public double Degrees { get { return GetRoundedValue(_degrees); } set { _degrees = value; } }
-
-        public int CompareTo(PolarCoordinate other)
-        {
-            throw new NotImplementedException();
-        }
 
         /// <summary>
         /// Checks for equality inclusive of the Rounding

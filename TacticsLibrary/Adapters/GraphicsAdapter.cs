@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using TacticsLibrary.Interfaces;
 
 namespace TacticsLibrary.Adapters
 {

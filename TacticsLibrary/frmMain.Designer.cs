@@ -29,19 +29,21 @@
         private void InitializeComponent()
         {
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.contactCourse = new System.Windows.Forms.NumericUpDown();
+            this.contactSpeed = new System.Windows.Forms.NumericUpDown();
             this.selectClass = new System.Windows.Forms.ListBox();
             this.selectType = new System.Windows.Forms.ListBox();
             this.plotPanel = new System.Windows.Forms.Panel();
             this.lblCurrentWidth = new System.Windows.Forms.Label();
             this.lblCurrentHeight = new System.Windows.Forms.Label();
-            this.contactSpeed = new System.Windows.Forms.NumericUpDown();
-            this.contactCourse = new System.Windows.Forms.NumericUpDown();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.contactSpeed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.contactCourse)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.contactSpeed)).BeginInit();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -51,6 +53,8 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.label2);
+            this.splitContainer1.Panel1.Controls.Add(this.label1);
             this.splitContainer1.Panel1.Controls.Add(this.contactCourse);
             this.splitContainer1.Panel1.Controls.Add(this.contactSpeed);
             this.splitContainer1.Panel1.Controls.Add(this.selectClass);
@@ -62,6 +66,45 @@
             this.splitContainer1.Size = new System.Drawing.Size(745, 555);
             this.splitContainer1.SplitterDistance = 248;
             this.splitContainer1.TabIndex = 1;
+            // 
+            // contactCourse
+            // 
+            this.contactCourse.Location = new System.Drawing.Point(122, 232);
+            this.contactCourse.Maximum = new decimal(new int[] {
+            360,
+            0,
+            0,
+            0});
+            this.contactCourse.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.contactCourse.Name = "contactCourse";
+            this.contactCourse.Size = new System.Drawing.Size(120, 20);
+            this.contactCourse.TabIndex = 3;
+            this.contactCourse.Value = new decimal(new int[] {
+            90,
+            0,
+            0,
+            0});
+            // 
+            // contactSpeed
+            // 
+            this.contactSpeed.Location = new System.Drawing.Point(122, 205);
+            this.contactSpeed.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.contactSpeed.Name = "contactSpeed";
+            this.contactSpeed.Size = new System.Drawing.Size(120, 20);
+            this.contactSpeed.TabIndex = 2;
+            this.contactSpeed.Value = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
             // 
             // selectClass
             // 
@@ -99,6 +142,7 @@
             this.plotPanel.Size = new System.Drawing.Size(500, 500);
             this.plotPanel.TabIndex = 1;
             this.plotPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.PlotPanel_Paint);
+            this.plotPanel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseClick);
             this.plotPanel.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseDoubleClick);
             // 
             // lblCurrentWidth
@@ -117,44 +161,23 @@
             this.lblCurrentHeight.Size = new System.Drawing.Size(0, 13);
             this.lblCurrentHeight.TabIndex = 3;
             // 
-            // contactSpeed
+            // label1
             // 
-            this.contactSpeed.Location = new System.Drawing.Point(60, 205);
-            this.contactSpeed.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.contactSpeed.Name = "contactSpeed";
-            this.contactSpeed.Size = new System.Drawing.Size(120, 20);
-            this.contactSpeed.TabIndex = 2;
-            this.contactSpeed.Value = new decimal(new int[] {
-            500,
-            0,
-            0,
-            0});
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(76, 209);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(44, 13);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "Velocity";
             // 
-            // contactCourse
+            // label2
             // 
-            this.contactCourse.Location = new System.Drawing.Point(60, 232);
-            this.contactCourse.Maximum = new decimal(new int[] {
-            360,
-            0,
-            0,
-            0});
-            this.contactCourse.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.contactCourse.Name = "contactCourse";
-            this.contactCourse.Size = new System.Drawing.Size(120, 20);
-            this.contactCourse.TabIndex = 3;
-            this.contactCourse.Value = new decimal(new int[] {
-            90,
-            0,
-            0,
-            0});
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(79, 236);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(40, 13);
+            this.label2.TabIndex = 5;
+            this.label2.Text = "Course";
             // 
             // frmMain
             // 
@@ -167,11 +190,12 @@
             this.Name = "frmMain";
             this.Text = "Main Plot";
             this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.contactSpeed)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.contactCourse)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.contactSpeed)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -187,6 +211,8 @@
         private System.Windows.Forms.ListBox selectType;
         private System.Windows.Forms.NumericUpDown contactSpeed;
         private System.Windows.Forms.NumericUpDown contactCourse;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
     }
 }
 

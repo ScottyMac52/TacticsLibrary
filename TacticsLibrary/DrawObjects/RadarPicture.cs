@@ -1,27 +1,18 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Numerics;
-using TacticsLibrary.Adapters;
-using TacticsLibrary.Converters;
 using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
+using TacticsLibrary.Interfaces;
 using TacticsLibrary.TrackingObjects;
 
 namespace TacticsLibrary.DrawObjects
 {
-    public class RadarPicture : IVisibleObjects, IRadar
+    public class RadarPicture : IRadar, IViewPorts
     {
-        /// <summary>
-        /// The location of the center of the Radar on the X Axis
-        /// </summary>
-        public float CenterPositionX { get; set; }
-        /// <summary>
-        /// The location of the center of the Radar on the Y Axis
-        /// </summary>
-        public float CenterPositionY { get; set; }
-        /// <summary>
+         /// <summary>
         /// The Radius of the Radar
         /// </summary>
         public float Radius { get; set; }
@@ -33,13 +24,11 @@ namespace TacticsLibrary.DrawObjects
         /// HThe number of range rings to display
         /// </summary>
         public int RangeRings { get; set; }
-        public SortedList<Guid, PlottedPoint> PlottedPoints { get; protected set; }
-
+        public SortedList<Guid, IContact> CurrentContacts { get; protected set; }
+        public Size ViewPortExtent { get; protected set; }
         public Point BullsEye { get; private set; }
         public Point HomePlate { get; private set; }
-
-        public Point OwnShip => new Point((int) CenterPositionX, (int) CenterPositionY);
-
+        public Point OwnShip => new Point(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
         public event EventHandler UpdatePending;
 
         protected virtual void OnUpdatePending(EventArgs e)
@@ -47,26 +36,28 @@ namespace TacticsLibrary.DrawObjects
             UpdatePending?.Invoke(this, e);
         }
 
-        public RadarPicture(Point bullsEye, Point homePlate)
+        public RadarPicture(Point bullsEye, Point homePlate, Size viewPortExtent)
         {
             BullsEye = bullsEye;
             HomePlate = homePlate;
+            ViewPortExtent = viewPortExtent;
         }
 
         public void Draw(IGraphics g)
         {
-            g.DrawCircle(Pens.Green, CenterPositionX, CenterPositionY, Radius);
+            g.DrawCircle(Pens.Green, ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight(), Radius);
 
             var dashedPen = new Pen(new SolidBrush(Color.FromArgb(0, 128, 0)))
             {
                 DashStyle = DashStyle.Dot
             };
+
             for (int ringCounter=0; ringCounter <= RangeRings; ringCounter++)
             {
                 var newRadius = Radius - ((ringCounter + 1) * RingSep);
                 if(newRadius > 0)
                 {
-                    g.DrawCircle(dashedPen, CenterPositionX, CenterPositionY, newRadius);
+                    g.DrawCircle(dashedPen, ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight(), newRadius);
                 }
             }
 
@@ -79,7 +70,7 @@ namespace TacticsLibrary.DrawObjects
             g.FillCircle(Brushes.Blue, HomePlate.X, HomePlate.Y, 5);
 
             // Plot all points
-            foreach (var item in PlottedPoints)
+            foreach (var item in CurrentContacts)
             {
                 item.Value.Draw(g);
             }
@@ -96,12 +87,12 @@ namespace TacticsLibrary.DrawObjects
         /// <param name="course">Course of the contact in degrees</param>
         /// <param name="contactType">Type of contact</param>
         /// <returns></returns>
-        public PlottedPoint PlotContact(Point offset, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
+        public Contact PlotContact(Point offset, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
         {
             var polarCoord = new PolarCoordinate(degrees, radius);
-            var plotPoint = polarCoord.GetPoint();
-            var newPoint = new PlottedPoint(OwnShip, BullsEye, HomePlate, plotPoint, altitude, contactType, course, speed);
-            AddPoint(newPoint, contactType);
+            var plotPoint = polarCoord.GetPoint().GetRelativePosition(ViewPortExtent);
+            var newPoint = new Contact(plotPoint, altitude, contactType, course, speed);
+            AddContact(newPoint, contactType);
             return newPoint;
         }
 
@@ -116,9 +107,9 @@ namespace TacticsLibrary.DrawObjects
         /// <param name="altitude"></param>
         /// <param name="speed"></param>
         /// <param name="course"></param>
-        public PlottedPoint PlotContact(ReferencePositions refPos, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
+        public Contact PlotContact(ReferencePositions refPos, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
         {
-            Point offset = new Point((int)Math.Round(CenterPositionX, 0), (int)Math.Round(CenterPositionY, 0));
+            Point offset = new Point(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
             switch (refPos)
             {
                 case ReferencePositions.BullsEye:
@@ -132,25 +123,55 @@ namespace TacticsLibrary.DrawObjects
             }
 
             return PlotContact(offset, radius, degrees, altitude, speed, course, contactType);
-        } 
+        }
+
+        /// <summary>
+        /// Find all contacts on the radar using a point and detection window
+        /// </summary>
+        /// <param name="checkPoint"><see cref="Point"/>The center point of the search</param>
+        /// <param name="detectionWindow"><see cref="Size"/>The size of the detction window</param>
+        /// <returns><see cref="List{Contact}"/></returns>
+        public List<IContact> FindContact(Point checkPoint, Size detectionWindow)
+        {
+            var contactList = new List<IContact>();
+            checkPoint.Offset(new Point(detectionWindow.GetCenterWidth(), detectionWindow.GetCenterHeight()));
+            var detectionArea = new Rectangle(checkPoint, detectionWindow);
+
+            if(CurrentContacts.Values.Any(contact =>
+            {
+                return detectionArea.IntersectsWith(contact.DetectionWindow);
+            }) == true)
+            {
+                contactList.AddRange(CurrentContacts.Values.ToList().FindAll(match =>
+                {
+                    return detectionArea.IntersectsWith(match.DetectionWindow);
+                }));
+            }
+
+            return contactList;
+        }
          
         /// <summary>
         /// Adds a point as a type and class of contact 
         /// </summary>
         /// <param name="newPoint">Relative position from (0,0) <see cref="Point"/></param>
         /// <param name="contactType">Contact type <see cref="ContactTypes"/></param>
-        public void AddPoint(PlottedPoint newPoint, ContactTypes contactType)
+        public void AddContact(Contact newPoint, ContactTypes contactType)
         {
-            if(PlottedPoints == null)
+            if(CurrentContacts == null)
             {
-                PlottedPoints = new SortedList<Guid, PlottedPoint>();
+                CurrentContacts = new SortedList<Guid, IContact>();
             }
-            if (!PlottedPoints.ContainsKey(newPoint.UniqueId))
+            if (!CurrentContacts.ContainsKey(newPoint.UniqueId))
             {
-                PlottedPoints.Add(newPoint.UniqueId, newPoint);
+                CurrentContacts.Add(newPoint.UniqueId, newPoint);
             }
 
             newPoint.UpdatePending += NewPoint_UpdatePending;
+        }
+
+        public void AddReference(Point refLocation, string refName, Image refImage)
+        {
         }
 
         private void NewPoint_UpdatePending(object sender, EventArgs e)

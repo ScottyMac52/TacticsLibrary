@@ -1,21 +1,23 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Numerics;
 using System.Collections.Generic;
 using System.Drawing;
 using TacticsLibrary.Converters;
 using TacticsLibrary.Extensions;
+
 
 namespace TacticsLibrary.tests
 {
     [TestClass]
     public class RelativeAbsoluteCoordinateTests
     {
-        public Rectangle ViewPortExtent { get; set; }
+        public Size ViewPortExtent { get; set; }
 
         [TestInitialize]
         public void Setup()
         {
-            ViewPortExtent = new Rectangle(new Point(0, 0), new Size(500, 500));
+            ViewPortExtent = new Size(500, 500);
         }
 
         [TestMethod]

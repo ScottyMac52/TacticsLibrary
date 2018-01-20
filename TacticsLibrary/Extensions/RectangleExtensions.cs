@@ -13,22 +13,22 @@ namespace TacticsLibrary.Extensions
     {
         public const int HALF = 2;
 
-        public static int GetCenterWidth(this Rectangle targetRect)
+        public static int GetCenterWidth(this Size targetRect)
         {
             return targetRect.Width / HALF;
         }
 
-        public static int GetCenterHeight(this Rectangle targetRect)
+        public static int GetCenterHeight(this Size targetRect)
         {
             return targetRect.Height / HALF;
         }
 
-        public static Point GetRelativePosition(this Point plottedPoint, Rectangle viewPort)
+        public static Point GetRelativePosition(this Point plottedPoint, Size viewPort)
         {
             return PositionConverter.GetRelativePosition(plottedPoint, viewPort);
         }
 
-        public static Point GetAbsolutePosition(this Point relativePosition, Rectangle viewPort)
+        public static Point GetAbsolutePosition(this Point relativePosition, Size viewPort)
         {
             return PositionConverter.GetAbsolutePosition(relativePosition, viewPort);
         }
