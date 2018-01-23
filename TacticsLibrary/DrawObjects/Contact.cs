@@ -153,12 +153,7 @@ namespace TacticsLibrary.DrawObjects
 
         public void Draw(IGraphics g)
         {
-            ContactDrawer = new DrawContact(ContactType, 10.0)
-            {
-                CurrentPosition = Position,
-                CurrentSpeed = Speed
-            };
-
+            ContactDrawer = new DrawContact(this, 10.0, DetectedBy.ViewPortExtent);
             ContactDrawer.Draw(g);
         }
 

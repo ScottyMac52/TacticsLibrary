@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TacticsLibrary.Extensions;
+using TacticsLibrary.Interfaces;
 using TacticsLibrary.Models;
 using TacticsLibrary.TrackingObjects;
 
@@ -19,7 +20,7 @@ namespace TacticsLibrary.Converters
         /// </summary>
         /// <param name="polarCoord"></param>
         /// <returns><see cref="Point"/></returns>
-        public static Point GetPointFromPolarCoordinate(PolarCoordinate polarCoord)
+        public static Point GetPointFromPolarCoordinate(IPolarCoordinate polarCoord)
         {
             var quadrantHelper = QuadrantHelper.CreateQuadrant(polarCoord);
             return new Point((int) Math.Round(quadrantHelper.X, ROUND_DIGITS), (int) Math.Round(quadrantHelper.Y, ROUND_DIGITS));
@@ -29,8 +30,8 @@ namespace TacticsLibrary.Converters
         /// Converts a plotted point relative to (0,0) on an X/Y axis
         /// </summary>
         /// <param name="plottedPoint">The point to plot</param>
-        /// <returns>The <see cref="PolarCoordinate"/> that matches the position</returns>
-        public static PolarCoordinate GetPolarCoordinateFromPoint(Point plottedPoint)
+        /// <returns>The <see cref="IPolarCoordinate"/> that matches the position</returns>
+        public static IPolarCoordinate GetPolarCoordinateFromPoint(Point plottedPoint)
         {
             var quadrantHelper = QuadrantHelper.CreateQuadrant(plottedPoint.X, plottedPoint.Y);
             System.Diagnostics.Debug.Print($"{plottedPoint} -> {quadrantHelper}");

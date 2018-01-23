@@ -42,15 +42,15 @@ namespace TacticsLibrary.Converters
         {
             var actualResult = relativePosition;
 
-            if(relativePosition.X >= viewPortExtent.GetCenterWidth())
-            {
-                actualResult.X = viewPortExtent.GetCenterWidth() + relativePosition.X;
-            }
-            else
-            {
-                actualResult.X = viewPortExtent.GetCenterWidth() - Math.Abs(relativePosition.X);
-            }
-
+            //if(relativePosition.X >= viewPortExtent.GetCenterWidth())
+            //{
+            //    actualResult.X = viewPortExtent.GetCenterWidth() + relativePosition.X;
+            //}
+            //else
+            //{
+            //    actualResult.X = viewPortExtent.GetCenterWidth() - Math.Abs(relativePosition.X);
+            //}
+            actualResult.X = viewPortExtent.GetCenterWidth() + relativePosition.X;
             actualResult.Y = viewPortExtent.GetCenterHeight() - relativePosition.Y;
 
             return actualResult;

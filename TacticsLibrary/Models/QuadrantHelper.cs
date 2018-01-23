@@ -1,6 +1,7 @@
 ﻿using System;
 using TacticsLibrary.Converters;
 using TacticsLibrary.Enums;
+using TacticsLibrary.Interfaces;
 using TacticsLibrary.TrackingObjects;
 
 namespace TacticsLibrary.Models
@@ -77,7 +78,7 @@ namespace TacticsLibrary.Models
             Z = Math.Sqrt(hypSqr);
         }
 
-        private QuadrantHelper(PolarCoordinate polarCoord)
+        private QuadrantHelper(IPolarCoordinate polarCoord)
         {
             var sinFactor = 1.00;
             var cosFactor = 1.00;
@@ -134,9 +135,9 @@ namespace TacticsLibrary.Models
         /// <summary>
         /// Factory that creates the Quadrant from a PolarCoordinate
         /// </summary>
-        /// <param name="polarCoord"><see cref="PolarCoordinate"/></param>
+        /// <param name="polarCoord"><see cref="IPolarCoordinate"/></param>
         /// <returns></returns>
-        public static QuadrantHelper CreateQuadrant(PolarCoordinate polarCoord)
+        public static QuadrantHelper CreateQuadrant(IPolarCoordinate polarCoord)
         {
             return new QuadrantHelper(polarCoord);
         }

@@ -35,7 +35,7 @@ namespace TacticsLibrary
         {
             base.OnLoad(e);
             RandomNumberGen = new Random((int)DateTime.Now.Ticks);
-            var randomPlots = GenerateRandomPlots(RadarReceiver.ViewPortExtent.GetCenterWidth(), RandomNumberGen.Next(10));
+            //var randomPlots = GenerateRandomPlots(RadarReceiver.ViewPortExtent.GetCenterWidth(), RandomNumberGen.Next(10));
             RefreshContactList();
             plotPanel.Invalidate();
         }
@@ -126,7 +126,7 @@ namespace TacticsLibrary
 
                 if (Enum.TryParse(typeToPlot, out contactType))
                 {
-                    var newContact = CreateContactAtPoint(contactType, absolutePosition, 0.00, decimal.ToInt32(contactSpeed.Value));
+                    var newContact = CreateContactAtPoint(contactType, absolutePosition, decimal.ToInt32(contactCourse.Value), decimal.ToInt32(contactSpeed.Value));
                     Logger.Info($"Adding contact: {newContact} as a plotted contact {absolutePosition}");
                     RadarReceiver.AddContact(newContact);
                     RefreshContactList();
