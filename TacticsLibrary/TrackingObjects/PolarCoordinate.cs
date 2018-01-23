@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 
 namespace TacticsLibrary.TrackingObjects
@@ -6,7 +8,7 @@ namespace TacticsLibrary.TrackingObjects
     /// <summary>
     /// Encapsulates a Polar Coordinate as two doubles Degrees and Radius
     /// </summary>
-    public class PolarCoordinate : IEquatable<PolarCoordinate>, IPolarCoordinate
+    public class PolarCoordinate : IEquatable<PolarCoordinate>
     {
         public const int ROUNDING_DIGITS = 4;
         private double _radius;

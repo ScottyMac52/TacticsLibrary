@@ -1,7 +1,5 @@
 ﻿using System;
-using TacticsLibrary.Converters;
 using TacticsLibrary.Enums;
-using TacticsLibrary.Interfaces;
 using TacticsLibrary.TrackingObjects;
 
 namespace TacticsLibrary.Models
@@ -78,7 +76,7 @@ namespace TacticsLibrary.Models
             Z = Math.Sqrt(hypSqr);
         }
 
-        private QuadrantHelper(IPolarCoordinate polarCoord)
+        private QuadrantHelper(PolarCoordinate polarCoord)
         {
             var sinFactor = 1.00;
             var cosFactor = 1.00;
@@ -93,7 +91,7 @@ namespace TacticsLibrary.Models
             // Quadrant 2
             else if (polarCoord.Degrees > WEST && polarCoord.Degrees <= NORTH)
             {
-                measuredAngle = NORTH - polarCoord.Degrees;
+                measuredAngle = polarCoord.Degrees - WEST;
                 cosFactor = NEGATIVE;
             }
             // Quadrant 3
@@ -135,9 +133,9 @@ namespace TacticsLibrary.Models
         /// <summary>
         /// Factory that creates the Quadrant from a PolarCoordinate
         /// </summary>
-        /// <param name="polarCoord"><see cref="IPolarCoordinate"/></param>
+        /// <param name="polarCoord"><see cref="PolarCoordinate"/></param>
         /// <returns></returns>
-        public static QuadrantHelper CreateQuadrant(IPolarCoordinate polarCoord)
+        public static QuadrantHelper CreateQuadrant(PolarCoordinate polarCoord)
         {
             return new QuadrantHelper(polarCoord);
         }
@@ -163,7 +161,7 @@ namespace TacticsLibrary.Models
 
             var sine = Y / Z;
             var cos = X / Z;
-            var tan = X / Y;
+            var tan = Y / X;
 
             if (!IsNegative(sine) && !IsNegative(cos) && !IsNegative(tan))
             {

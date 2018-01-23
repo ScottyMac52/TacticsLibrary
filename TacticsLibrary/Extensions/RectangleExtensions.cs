@@ -34,12 +34,12 @@ namespace TacticsLibrary.Extensions
             return PositionConverter.GetAbsolutePosition(relativePosition, viewPort);
         }
         
-        public static IPolarCoordinate GetPolarCoord(this Point plottedPoint)
+        public static PolarCoordinate GetPolarCoord(this Point plottedPoint)
         {
             return CoordinateConverter.GetPolarCoordinateFromPoint(plottedPoint);
         }
 
-        public static Point GetPoint(this IPolarCoordinate polarCoord)
+        public static Point GetPoint(this PolarCoordinate polarCoord)
         {
             return CoordinateConverter.GetPointFromPolarCoordinate(polarCoord);
 

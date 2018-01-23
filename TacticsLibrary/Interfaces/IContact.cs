@@ -14,7 +14,7 @@ namespace TacticsLibrary.Interfaces
         DateTime LastUpdate { get; }
         Point Position { get; }
         Point RelativePosition { get; }
-        IPolarCoordinate PolarPosit { get;  }
+        PolarCoordinate PolarPosit { get;  }
         Rectangle DetectionWindow { get; }
         System.Threading.Timer TrackTimer { get; }
         event EventHandler UpdatePending;

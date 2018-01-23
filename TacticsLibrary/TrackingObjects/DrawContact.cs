@@ -30,16 +30,12 @@ namespace TacticsLibrary.TrackingObjects
         /// </summary>  
         public void DrawVelocityVector()
         {
-            // Based on the course and speed calculate the distance in 10 seconds
+            // Based on the course and speed calculate the distance in VelocityVectorTime seconds
             // Get the new position based on course and distance traveled
             // Now calculate the contacts movement in that timespan
             var milesPerSecond = (Contact.Speed / SECONDS_PER_HOUR);
             var distance = VelocityVectorTime * milesPerSecond;
-            var newPolarPos = Contact.PolarPosit;
-
-            var newRelativePos = newPolarPos.GetPoint();
-            var newPos = newRelativePos.GetAbsolutePosition(ViewPortExtent);
-            //var newPos = CoordinateConverter.CalculatePointFromDegrees(Position, distance, Course);
+            var newPos = CoordinateConverter.CalculatePointFromDegrees(Contact.Position, distance, Contact.Heading);
             GraphicsContext.DrawLine(Pens.Green, Contact.Position, newPos);
         }
 
@@ -108,7 +104,8 @@ namespace TacticsLibrary.TrackingObjects
         public void DrawText()
         {
             Point drawText = DrawArea.Location;
-            drawText.Offset(new Point(20, 0));
+            drawText.Offset(new Point(20, 20));
+            ReferenceText = $"{Contact.PolarPosit} - {Contact.Heading}° ";
             GraphicsContext.DrawString(ReferenceText, SystemFonts.StatusFont, Brushes.White, drawText);
         }
 

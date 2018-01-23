@@ -58,7 +58,7 @@ namespace TacticsLibrary.DrawObjects
         /// <summary>
         /// The current polar position of the contact
         /// </summary>
-        public IPolarCoordinate PolarPosit { get; internal set; }
+        public PolarCoordinate PolarPosit { get; internal set; }
         /// <summary>
         /// Current velocity expressed as units per hour
         /// </summary>
@@ -134,17 +134,12 @@ namespace TacticsLibrary.DrawObjects
                 // Now calculate the contacts movement in that timespan
                 var distance = timeSinceLastUpdate.TotalSeconds * (Speed/SECONDS_PER_HOUR);
 
-                // From the last Position now move the contact
-                var offset = Position;
-
                 // Get the new position based on course and distance traveled
-                //var newPos = CoordinateConverter.CalculatePointFromDegrees(offset, distance, Course);
+                var newPos = CoordinateConverter.CalculatePointFromDegrees(Position, distance, Heading);
 
-               //  System.Diagnostics.Debug.Print($"Contact {UniqueId}, Type:{ContactType} Speed:{Speed} knts Course:{Course}° from Position:({Position.X}, {Position.Y}) to ({newPos.X}, {newPos.Y})");
+                Position = newPos;
+                PolarPosit = newPos.GetRelativePosition(DetectedBy.ViewPortExtent).GetPolarCoord();
 
-                //Position = newPos;
-
-                //PolarPosit = CoordinateConverter.CalculateDegreesFromPoint(OwnShip, Position);
                 // Notify the change in Position
                 OnUpdatePending(new EventArgs());
             }

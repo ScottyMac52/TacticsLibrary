@@ -75,7 +75,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TrackingObjects\DrawContact.cs" />
-    <Compile Include="Interfaces\IPolarCoordinate.cs" />
     <Compile Include="TrackingObjects\PolarCoordinate.cs" />
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>

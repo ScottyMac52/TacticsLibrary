@@ -9,12 +9,12 @@ namespace TacticsLibrary.tests
     [TestClass]
     public class RelativeAbsoluteCoordinateTests
     {
-        public Size ViewPortExtent { get; set; }
+        public Size ViewPortExtent { get; private set; }
 
         [TestInitialize]
         public void Setup()
         {
-            ViewPortExtent = new Size(500, 500);
+            ViewPortExtent = new Size(496, 496);
         }
 
         [TestMethod]
