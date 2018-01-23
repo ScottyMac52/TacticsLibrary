@@ -38,5 +38,24 @@ namespace TacticsLibrary.Converters
             return new PolarCoordinate(quadrantHelper.PolarCoord.Degrees, quadrantHelper.Z);
   
         }
-    }
+
+          public static Point CalculatePointFromDegrees(Point offset, double radius, double degrees)
+         {
+             // Subtract the 90 degree offset to account for conversion from polar to compass coordinates
+             var theta = degrees;
+             // Calculate the degrees into Radians 
+             var radians = theta * (Math.PI / 180);
+ 
+             // X is radius * Cos(theta in radians)
+             var xValue = radius * Math.Cos(radians);
+             // Y is radius * Sin(theta in radians)
+             var yValue = radius * Math.Sin(radians);
+ 
+             // Account for specified offset
+             Int32 x = offset.X + (int)Math.Round(xValue, 0);
+             Int32 y = offset.Y + (int)Math.Round(yValue, 0);
+ 
+             return new Point(x, y);
+         }
+}
 }
