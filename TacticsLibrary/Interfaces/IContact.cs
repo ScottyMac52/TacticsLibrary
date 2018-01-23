@@ -13,14 +13,16 @@ namespace TacticsLibrary.Interfaces
         ContactTypes ContactType { get; }
         DateTime LastUpdate { get; }
         Point Position { get; }
-        float Speed { get; set; }
-        float Course { get; set; }
-        double Altitude { get; set; }
-        double Heading { get; set; }
+        Point RelativePosition { get; }
         IPolarCoordinate PolarPosit { get;  }
         Rectangle DetectionWindow { get; }
         System.Threading.Timer TrackTimer { get; }
-
         event EventHandler UpdatePending;
+        string ToString();
+
+        double Speed { get; set; }
+        double Altitude { get; set; }
+        double Heading { get; set; }
+
     }
 }

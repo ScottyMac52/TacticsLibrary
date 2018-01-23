@@ -1,7 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Numerics;
-using System.Collections.Generic;
 using System.Drawing;
 using TacticsLibrary.Converters;
 using TacticsLibrary.Extensions;

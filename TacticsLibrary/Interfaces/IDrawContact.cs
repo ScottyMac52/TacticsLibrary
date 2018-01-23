@@ -1,10 +1,16 @@
 ﻿using System.Drawing;
+using TacticsLibrary.Enums;
 
 namespace TacticsLibrary.Interfaces
 {
     public interface IDrawContact
     {
         Rectangle DrawArea { get; }
+        Point CurrentPosition { get; set; }
+        double CurrentSpeed { get; set; }
+        ContactTypes ContactType { get; }
+        string ReferenceText { get; }
+        
         void Draw(IGraphics g);
         void DrawVelocityVector();
         void DrawText();

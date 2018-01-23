@@ -8,16 +8,15 @@ namespace TacticsLibrary.Interfaces
 {
     public interface IRadar
     {
+        Size ViewPortExtent { get; }
         Point BullsEye { get; }
         SortedList<Guid, IContact> CurrentContacts { get; }
         float Radius { get; set; }
         int RangeRings { get; set; }
         float RingSep { get; set; }
-        void AddContact(Contact newPoint, ContactTypes contactType);
+        void AddContact(IContact newContact);
         void AddReference(Point refLocation, string refName, Image refImage);
         void Draw(IGraphics g);
-        Contact PlotContact(ReferencePositions refPos, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType);
-        Contact PlotContact(Point offset, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown);
         List<IContact> FindContact(Point checkPoint, Size detectionWindow);
     }
 }

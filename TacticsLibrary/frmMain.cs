@@ -1,12 +1,14 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using TacticsLibrary.Adapters;
-using TacticsLibrary.Converters;
 using TacticsLibrary.DrawObjects;
 using TacticsLibrary.Enums;
+using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 using TacticsLibrary.TrackingObjects;
 
@@ -19,73 +21,51 @@ namespace TacticsLibrary
         int angle = 0;
         int StartAngle = 0;
 
+        protected static ILog Logger => LogManager.GetLogger("frmMain");
         protected IRadar RadarReceiver { get; private set; }
-
         protected Random RandomNumberGen { get; private set; }
 
         public frmMain()
         {
             InitializeComponent();
             RadarReceiver = InitializeRadar();
-
-            RandomNumberGen = new Random((int)DateTime.Now.Ticks);
-
-            //AddRandomPlots(RandomNumberGen.Next(10));
-
-            var friendly = RadarReceiver.PlotContact(new Point(0,0), 360, 100, 20000, 36000, 135, ContactTypes.AirFriendly);
-            //var missile = ThreatWarningReceiver.PlotContact(friendly.Position, 180, 250, 20000, 360000, 135, ContactTypes.MissileMRM);
-
-            plotPanel.Invalidate();
         }
 
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+            RandomNumberGen = new Random((int)DateTime.Now.Ticks);
+            var randomPlots = GenerateRandomPlots(RadarReceiver.ViewPortExtent.GetCenterWidth(), RandomNumberGen.Next(10));
+            RefreshContactList();
+            plotPanel.Invalidate();
         }
 
-        private void AddRandomPlots(int nPlots)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rMax"></param>
+        /// <param name="nPlots"></param>
+        /// <returns></returns>
+        private List<IContact> GenerateRandomPlots(double rMax, int nPlots)
         {
-            var randomPlots = GetRandomPlots(plotPanel.Width / 2, nPlots);
-
-            randomPlots.ForEach(rp =>
-            {
-                var contactType = GetRandomContactType();
-                var altitude = contactType.ToString().Contains("Air") || contactType.ToString().Contains("Missile") ? RandomNumberGen.Next(50000) : 0.00;
-                var course = RandomNumberGen.Next(360);
-                var speed = contactType.ToString().Contains("Air") ? RandomNumberGen.Next(300, 10000) : contactType.ToString().Contains("Missile") ? RandomNumberGen.Next(3000, 100000) : RandomNumberGen.Next(50);
-                var heading = RandomNumberGen.Next(course);
-                RadarReceiver.PlotContact(ReferencePositions.OwnShip, rp.Degrees, rp.Radius, altitude, speed, course, contactType);
-            });
-
-        }
-
-        private List<PolarCoordinate> GetRandomPlots(double rMax, int nPlots)
-        {
-            var randPlots = new List<PolarCoordinate>();
+            var randPlots = new List<IContact>();
 
             for (int i = 0; i < nPlots; i++)
             {
                 var randomRange = RandomNumberGen.NextDouble() * rMax;
                 var randomBearing = RandomNumberGen.Next(360);
-
-                randPlots.Add(new PolarCoordinate(randomBearing, randomRange));
+                var contactType = GetRandomContactType();
+                var altitude = contactType.ToString().Contains("Air") || contactType.ToString().Contains("Missile") ? RandomNumberGen.Next(50000) : 0.00;
+                var speed = contactType.ToString().Contains("Air") ? RandomNumberGen.Next(300, 10000) : contactType.ToString().Contains("Missile") ? RandomNumberGen.Next(3000, 100000) : RandomNumberGen.Next(50);
+                var heading = RandomNumberGen.Next(360);
+                var polarPosition = new PolarCoordinate(randomBearing, randomRange);
+                var newContact = CreateContactAtPolarCoordinate(contactType, polarPosition, heading, speed, altitude);
+                Logger.Info($"Adding contact: {newContact} as a random contact.");
+                randPlots.Add(newContact);
+                RadarReceiver.AddContact(newContact);
             }
 
             return randPlots;
-        }
-
-        private List<Point> GetRandomPoints(double rMax, int nPoints, Point offset)
-        {
-            var randPoints = new List<Point>();
-            for (int i = 0; i < nPoints; i++)
-            {
-                var r = Math.Sqrt((double)RandomNumberGen.Next() / int.MaxValue) * rMax;
-                var theta = (double)RandomNumberGen.Next() / int.MaxValue * 2 * Math.PI;
-                var newPoint = new Point((int)(r * Math.Cos(theta)), (int)(r * Math.Sin(theta)));
-                newPoint.Offset(offset);
-                randPoints.Add(newPoint);
-            }
-            return randPoints;
         }
 
         private ContactTypes GetRandomContactType()
@@ -104,16 +84,16 @@ namespace TacticsLibrary
         {
             var bullsEye = new Point(123, 90);
             var homePlate = new Point(100, 200);
-
-            var rwrReceiver = new RadarPicture(bullsEye, homePlate, new Size(plotPanel.Width,plotPanel.Height))
+            var radarSize = new Size(plotPanel.ClientSize.Width, plotPanel.ClientSize.Height);
+            Logger.Info($"Creating radar picture {radarSize}");
+            var rwrReceiver = new RadarPicture(bullsEye, homePlate, radarSize)
             {
-                Radius = plotPanel.Width / 2,
+                Radius = radarSize.Width / 2,
                 RangeRings = 5,
                 RingSep = 50
             };
 
             rwrReceiver.UpdatePending += RwrReceiver_UpdatePending;
-
             return rwrReceiver;
         }
 
@@ -146,11 +126,49 @@ namespace TacticsLibrary
 
                 if (Enum.TryParse(typeToPlot, out contactType))
                 {
-                    var newPoint = new Contact(absolutePosition, 0.00, contactType, decimal.ToInt32(contactCourse.Value), decimal.ToInt32(contactSpeed.Value));
-                    RadarReceiver.AddContact(newPoint, contactType);
+                    var newContact = CreateContactAtPoint(contactType, absolutePosition, 0.00, decimal.ToInt32(contactSpeed.Value));
+                    Logger.Info($"Adding contact: {newContact} as a plotted contact {absolutePosition}");
+                    RadarReceiver.AddContact(newContact);
+                    RefreshContactList();
                     plotPanel.Invalidate();
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates an returns a contact based on the current geometry of the sensors display
+        /// </summary>
+        /// <param name="contactType">Contact type <see cref="ContactTypes"/></param>
+        /// <param name="absolutePosition">Contact absolute position in sensor <see cref="Point"/></param>
+        /// <param name="altitude">Contact altitude in feet</param>
+        /// <returns></returns>
+        private IContact CreateContactAtPoint(ContactTypes contactType, Point absolutePosition, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
+        {
+            var relativePosition = absolutePosition.GetRelativePosition(RadarReceiver.ViewPortExtent);
+            var polarCoord = relativePosition.GetPolarCoord();
+            var detectStartPoint = absolutePosition;
+            detectStartPoint.Offset(-1 * DrawContact.POSITION_OFFSET, -1 * DrawContact.POSITION_OFFSET);
+            var detectionWindow = new Rectangle(detectStartPoint, new Size(DrawContact.POSITION_OFFSET, DrawContact.POSITION_OFFSET));
+
+            var newContact = new Contact(RadarReceiver)
+            {
+                Position = absolutePosition,
+                RelativePosition = relativePosition,
+                Speed = speed,
+                Heading = heading,
+                Altitude = 0.00,
+                ContactType = contactType,
+                PolarPosit = polarCoord,
+                DetectionWindow = detectionWindow
+            };
+
+            return newContact;
+        }
+
+        private IContact CreateContactAtPolarCoordinate(ContactTypes contactType, PolarCoordinate polarCoord, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
+        {
+            var absolutePosition = polarCoord.GetPoint().GetAbsolutePosition(RadarReceiver.ViewPortExtent);
+            return CreateContactAtPoint(contactType, absolutePosition, heading, speed, altitude);
         }
 
         private void plotPanel_MouseClick(object sender, MouseEventArgs e)
@@ -159,8 +177,23 @@ namespace TacticsLibrary
             {
                 var absolutePosition = new Point(e.X, e.Y);
                 var contacts = RadarReceiver.FindContact(absolutePosition, new Size(5, 5));
-                MessageBox.Show($"There were {contacts.Count} contact(s) found.");
+                MessageBox.Show($"Top contact found {contacts.FirstOrDefault()}");
             }
+        }
+
+        private void plotPanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            lblPosition.Text = $"{e.Location}";
+            var relativePos = e.Location.GetRelativePosition(plotPanel.ClientSize);
+            lblPositionRelative.Text = $"{relativePos}";
+            lblPolarPosition.Text = $"{relativePos.GetPolarCoord()}";
+        }
+
+        private void RefreshContactList()
+        {
+            var dataBindList = RadarReceiver.CurrentContacts.Values.ToList();
+            gridViewContacts.DataSource = dataBindList;
+            gridViewContacts.Refresh();
         }
     }
 }

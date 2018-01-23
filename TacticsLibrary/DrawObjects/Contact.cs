@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using TacticsLibrary.Converters;
 using TacticsLibrary.Enums;
+using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 using TacticsLibrary.TrackingObjects;
 
@@ -14,26 +15,54 @@ namespace TacticsLibrary.DrawObjects
     public class Contact : IVisibleObjects, IEquatable<Contact>, IContact
     {
         private const double SECONDS_PER_HOUR = 3600.00;
+
+        /// <summary>
+        /// Track Timer
+        /// </summary>
+        // TODO: Remove timer from contacts and put in IRadar interface
         public System.Threading.Timer TrackTimer { get; protected set; }
+        /// <summary>
+        /// Unique Id for the contact
+        /// </summary>
         public Guid UniqueId { get; protected set; }
+        /// <summary>
+        /// Timestamp the contact was added
+        /// </summary>
         public DateTime TimeStamp { get; protected set; }
-        public ContactTypes ContactType { get; protected set; }
-        public Point Position { get; protected set; }
+        /// <summary>
+        /// Contact type
+        /// </summary>
+        /// <see cref="ContactTypes"/>
+        public ContactTypes ContactType { get; set; }
+        /// <summary>
+        /// The interface that draws the contact
+        /// </summary>
+        /// <see cref="IDrawContact"/>
         public IDrawContact ContactDrawer { get; protected set; }
-        public IPolarCoordinate PolarPosit { get; protected set; }
-        public Rectangle DetectionWindow { get; protected set; }
+        /// <summary>
+        /// Which sensor is tracking this target
+        /// </summary>
+        /// <see cref="IRadar"/>
+        public IRadar DetectedBy { get; protected set; }
+        /// <summary>
+        /// Contact requires an update
+        /// </summary>
         public event EventHandler UpdatePending;
 
         #region Properties that can be externally changed
 
         /// <summary>
+        /// Position relative to (0,0) in coordinate system
+        /// </summary>
+        public Point Position { get; internal set; }
+        /// <summary>
+        /// The current polar position of the contact
+        /// </summary>
+        public IPolarCoordinate PolarPosit { get; internal set; }
+        /// <summary>
         /// Current velocity expressed as units per hour
         /// </summary>
-        public float Speed { get; set; }
-        /// <summary>
-        /// True compas course of the contact
-        /// </summary>
-        public float Course { get; set; }
+        public double Speed { get; set; }
         /// <summary>
         /// Altitude expressed in units 
         /// </summary>
@@ -45,10 +74,20 @@ namespace TacticsLibrary.DrawObjects
         /// <summary>
         /// Last DateTime in UTC that the contact was updated
         /// </summary>
-        public DateTime LastUpdate { get; set; }
+        public DateTime LastUpdate { get; internal set; }
+        /// <summary>
+        /// Contacts pre-calculated detection window
+        /// </summary>
+        /// <see cref="Rectangle"/>
+        public Rectangle DetectionWindow { get; internal set; }
+        public Point RelativePosition { get; internal set; }
 
         #endregion Properties that can be externally changed
-        
+
+        /// <summary>
+        /// Update pending handler
+        /// </summary>
+        /// <param name="e"></param>
         protected virtual void OnUpdatePending(EventArgs e)
         {
             UpdatePending?.Invoke(this, e);
@@ -57,29 +96,14 @@ namespace TacticsLibrary.DrawObjects
         /// <summary>
         /// Creates a plotted point
         /// </summary>
-        /// <param name="position"></param>
-        /// <param name="altitude"></param>
-        /// <param name="contactType"></param>
-        /// <param name="course"></param>
-        /// <param name="speed"></param>
-        /// <param name="heading"></param>
-        public Contact(Point position, double altitude, ContactTypes contactType, float course = 0F, int speed = 0, double heading = 0.00)
+        public Contact(IRadar detectedBy)
         {
-            Position = position;
-            Altitude = altitude;
-            ContactType = contactType;
-            Course = course;
-            Speed = speed;
-            Heading = heading;
+            DetectedBy = detectedBy;
             UniqueId = Guid.NewGuid();
             TimeStamp = DateTime.UtcNow;
             LastUpdate = TimeStamp;
-            PolarPosit = CoordinateConverter.GetPolarCoordinateFromPoint(position);
 
             // Calculate and set this contacts Detection Window
-            var detectStartPoint = Position;
-            detectStartPoint.Offset(DrawContact.POSITION_OFFSET, DrawContact.POSITION_OFFSET);
-            DetectionWindow = new Rectangle(detectStartPoint, new Size(DrawContact.POSITION_OFFSET, DrawContact.POSITION_OFFSET));
             TrackTimer = new System.Threading.Timer(TimerCall, UniqueId, 0, 1000);
         }
 
@@ -138,7 +162,10 @@ namespace TacticsLibrary.DrawObjects
             ContactDrawer.Draw(g);
         }
 
-        
+        public override string ToString()
+        {
+            return $"{ContactType}: {PolarPosit.Degrees}° {PolarPosit.Radius} miles {Heading}° {Speed} knts {Altitude} ft";
+        }
 
     }
 }

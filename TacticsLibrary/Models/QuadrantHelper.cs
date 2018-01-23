@@ -22,8 +22,41 @@ namespace TacticsLibrary.Models
         public PolarCoordinate PolarCoord => CalculatePolarCoordinates();
 
         protected double Angle => CalculateBaseAngle();
-        protected double OffSetAngle => CalculateOffsetAngle();
-        protected double AngleTheta => OffSetAngle - Angle;
+        protected double AngleTheta => GetThetaAngle();
+
+        public double GetThetaAngle()
+        {
+            var thetaAngle = NORTH_PRIME;
+            switch (Quadrant)
+            {
+                case TrigQuadrant.Unknown:
+                    if (Z == 0 || X == 0)
+                    {
+                        if (IsNegative(Y))
+                        {
+                            thetaAngle = SOUTH;
+                        }
+                        else
+                        {
+                            thetaAngle = NORTH_PRIME;
+                        }
+                    }
+                    break;
+                case TrigQuadrant.One:
+                    thetaAngle = EAST - Angle;
+                    break;
+                case TrigQuadrant.Two:
+                    thetaAngle = WEST + Angle;
+                    break;
+                case TrigQuadrant.Three:
+                    thetaAngle = WEST - Angle;
+                    break;
+                case TrigQuadrant.Four:
+                    thetaAngle = EAST + Angle;
+                    break;
+            }
+            return thetaAngle;
+        }
 
         /// <summary>
         /// Provate constructor 
@@ -154,43 +187,21 @@ namespace TacticsLibrary.Models
 
             return currentQuadrant;
         }
-
-        /// <summary>
-        /// Calulates the Offset used for the angle to determine theta 
-        /// </summary>
-        /// <returns></returns>
-        protected double CalculateOffsetAngle()
-        {
-            var offsetAngle = NORTH_PRIME;
-            switch (Quadrant)
-            {
-                case TrigQuadrant.Unknown:
-                    break;
-                case TrigQuadrant.One:
-                    offsetAngle = EAST;
-                    break;
-                case TrigQuadrant.Two:
-                    offsetAngle = NORTH;
-                    break;
-                case TrigQuadrant.Three:
-                    offsetAngle = WEST;
-                    break;
-                case TrigQuadrant.Four:
-                    offsetAngle = SOUTH;
-                    break;
-            }
-
-            return offsetAngle;
-        }
-
-
+              
         protected double CalculateBaseAngle()
         {
             var baseAngle = 0.00;
             // Division by zero guard
             if (Z == 0 || X == 0)
             {
-                baseAngle = NORTH_PRIME;
+                if(IsNegative(Y))
+                {
+                    baseAngle = SOUTH;
+                }
+                else
+                {
+                    baseAngle = NORTH_PRIME;
+                }
             }
             else
             {
@@ -213,6 +224,11 @@ namespace TacticsLibrary.Models
                 }
             }
             return RadiansToDegrees(baseAngle);
+        }
+
+        public override string ToString()
+        {
+            return $"{Quadrant}: {X}, {Y} -> {AngleTheta} for {Z}";
         }
 
         private bool IsNegative(double val)

@@ -33,6 +33,7 @@ namespace TacticsLibrary.Converters
         public static PolarCoordinate GetPolarCoordinateFromPoint(Point plottedPoint)
         {
             var quadrantHelper = QuadrantHelper.CreateQuadrant(plottedPoint.X, plottedPoint.Y);
+            System.Diagnostics.Debug.Print($"{plottedPoint} -> {quadrantHelper}");
             return new PolarCoordinate(quadrantHelper.PolarCoord.Degrees, quadrantHelper.Z);
   
         }

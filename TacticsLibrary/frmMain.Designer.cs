@@ -29,6 +29,10 @@
         private void InitializeComponent()
         {
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.label4 = new System.Windows.Forms.Label();
+            this.lblPosition = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.contactCourse = new System.Windows.Forms.NumericUpDown();
             this.contactSpeed = new System.Windows.Forms.NumericUpDown();
             this.selectClass = new System.Windows.Forms.ListBox();
@@ -36,14 +40,16 @@
             this.plotPanel = new System.Windows.Forms.Panel();
             this.lblCurrentWidth = new System.Windows.Forms.Label();
             this.lblCurrentHeight = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
+            this.lblPositionRelative = new System.Windows.Forms.Label();
+            this.gridViewContacts = new System.Windows.Forms.DataGridView();
+            this.lblPolarPosition = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.contactCourse)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.contactSpeed)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gridViewContacts)).BeginInit();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -53,6 +59,10 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.lblPolarPosition);
+            this.splitContainer1.Panel1.Controls.Add(this.lblPositionRelative);
+            this.splitContainer1.Panel1.Controls.Add(this.label4);
+            this.splitContainer1.Panel1.Controls.Add(this.lblPosition);
             this.splitContainer1.Panel1.Controls.Add(this.label2);
             this.splitContainer1.Panel1.Controls.Add(this.label1);
             this.splitContainer1.Panel1.Controls.Add(this.contactCourse);
@@ -66,6 +76,41 @@
             this.splitContainer1.Size = new System.Drawing.Size(745, 555);
             this.splitContainer1.SplitterDistance = 248;
             this.splitContainer1.TabIndex = 1;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(79, 265);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(44, 13);
+            this.label4.TabIndex = 7;
+            this.label4.Text = "Position";
+            // 
+            // lblPosition
+            // 
+            this.lblPosition.AutoSize = true;
+            this.lblPosition.Location = new System.Drawing.Point(122, 265);
+            this.lblPosition.Name = "lblPosition";
+            this.lblPosition.Size = new System.Drawing.Size(0, 13);
+            this.lblPosition.TabIndex = 6;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(79, 236);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(40, 13);
+            this.label2.TabIndex = 5;
+            this.label2.Text = "Course";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(76, 209);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(44, 13);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "Velocity";
             // 
             // contactCourse
             // 
@@ -144,6 +189,7 @@
             this.plotPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.PlotPanel_Paint);
             this.plotPanel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseClick);
             this.plotPanel.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseDoubleClick);
+            this.plotPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseMove);
             // 
             // lblCurrentWidth
             // 
@@ -161,29 +207,36 @@
             this.lblCurrentHeight.Size = new System.Drawing.Size(0, 13);
             this.lblCurrentHeight.TabIndex = 3;
             // 
-            // label1
+            // lblPositionRelative
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(76, 209);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(44, 13);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "Velocity";
+            this.lblPositionRelative.AutoSize = true;
+            this.lblPositionRelative.Location = new System.Drawing.Point(123, 290);
+            this.lblPositionRelative.Name = "lblPositionRelative";
+            this.lblPositionRelative.Size = new System.Drawing.Size(0, 13);
+            this.lblPositionRelative.TabIndex = 8;
             // 
-            // label2
+            // gridViewContacts
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(79, 236);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(40, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Course";
+            this.gridViewContacts.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gridViewContacts.Location = new System.Drawing.Point(13, 571);
+            this.gridViewContacts.Name = "gridViewContacts";
+            this.gridViewContacts.Size = new System.Drawing.Size(745, 150);
+            this.gridViewContacts.TabIndex = 9;
+            // 
+            // lblPolarPosition
+            // 
+            this.lblPolarPosition.AutoSize = true;
+            this.lblPolarPosition.Location = new System.Drawing.Point(122, 303);
+            this.lblPolarPosition.Name = "lblPolarPosition";
+            this.lblPolarPosition.Size = new System.Drawing.Size(0, 13);
+            this.lblPolarPosition.TabIndex = 9;
             // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(860, 595);
+            this.ClientSize = new System.Drawing.Size(764, 724);
+            this.Controls.Add(this.gridViewContacts);
             this.Controls.Add(this.lblCurrentHeight);
             this.Controls.Add(this.lblCurrentWidth);
             this.Controls.Add(this.splitContainer1);
@@ -196,6 +249,7 @@
             this.splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.contactCourse)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.contactSpeed)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gridViewContacts)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -213,6 +267,11 @@
         private System.Windows.Forms.NumericUpDown contactCourse;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label lblPosition;
+        private System.Windows.Forms.Label lblPositionRelative;
+        private System.Windows.Forms.DataGridView gridViewContacts;
+        private System.Windows.Forms.Label lblPolarPosition;
     }
 }
 

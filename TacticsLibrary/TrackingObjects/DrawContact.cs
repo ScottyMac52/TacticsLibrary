@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using TacticsLibrary.Converters;
 using TacticsLibrary.Enums;
 using TacticsLibrary.Interfaces;
 
@@ -11,7 +12,7 @@ namespace TacticsLibrary.TrackingObjects
         private const double SECONDS_PER_HOUR = 3600.00;
 
         public Point CurrentPosition { get; set; }
-        public float CurrentSpeed { get; set; }
+        public double CurrentSpeed { get; set; }
         public Rectangle DrawArea { get; private set; }
         public ContactTypes ContactType { get; private set; }
         public string ReferenceText { get; private set; }
@@ -92,6 +93,7 @@ namespace TacticsLibrary.TrackingObjects
             }
 
             DrawVelocityVector();
+            DrawText();
         }
 
         /// <summary>

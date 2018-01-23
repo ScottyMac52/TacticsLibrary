@@ -7,12 +7,14 @@ using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 using TacticsLibrary.TrackingObjects;
+using log4net;
 
 namespace TacticsLibrary.DrawObjects
 {
     public class RadarPicture : IRadar, IViewPorts
     {
-         /// <summary>
+        public ILog Logger { get; protected set; }
+        /// <summary>
         /// The Radius of the Radar
         /// </summary>
         public float Radius { get; set; }
@@ -36,11 +38,14 @@ namespace TacticsLibrary.DrawObjects
             UpdatePending?.Invoke(this, e);
         }
 
-        public RadarPicture(Point bullsEye, Point homePlate, Size viewPortExtent)
+        public RadarPicture(Point bullsEye, Point homePlate, Size viewPortExtent, ILog logger = null)
         {
             BullsEye = bullsEye;
             HomePlate = homePlate;
             ViewPortExtent = viewPortExtent;
+            CurrentContacts = new SortedList<Guid, IContact>();
+            Logger = logger == null ? LogManager.GetLogger(typeof(RadarPicture)) : logger;
+            Logger.Info($"Created radar {ViewPortExtent} BullsEye: {BullsEye} HomePlate: {HomePlate}");
         }
 
         public void Draw(IGraphics g)
@@ -77,55 +82,6 @@ namespace TacticsLibrary.DrawObjects
         }
 
         /// <summary>
-        /// Plots a contact using the specified Offset the offset can be any point 
-        /// </summary>
-        /// <param name="offset">Point that represents the startiong point for the plot</param>
-        /// <param name="degrees">Bearing from offset in degrees</param>
-        /// <param name="radius">Range in nautical miles</param>
-        /// <param name="altitude">Altitude of the contact</param>
-        /// <param name="speed">Speed of the contact in knts</param>
-        /// <param name="course">Course of the contact in degrees</param>
-        /// <param name="contactType">Type of contact</param>
-        /// <returns></returns>
-        public Contact PlotContact(Point offset, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
-        {
-            var polarCoord = new PolarCoordinate(degrees, radius);
-            var plotPoint = polarCoord.GetPoint().GetRelativePosition(ViewPortExtent);
-            var newPoint = new Contact(plotPoint, altitude, contactType, course, speed);
-            AddContact(newPoint, contactType);
-            return newPoint;
-        }
-
-
-        /// <summary>
-        /// Plots a contact using OwnShip as a default reference but supports BullsEye & HomePlate callouts too
-        /// </summary>
-        /// <param name="refPos">Where the coordinate (0,0) origin is</param>
-        /// <param name="degrees">The angle of the contact in compass degrees</param>
-        /// <param name="radius">The number of units</param>
-        /// <param name="contactType">The type of contact, defaults to AirUnknown</param>
-        /// <param name="altitude"></param>
-        /// <param name="speed"></param>
-        /// <param name="course"></param>
-        public Contact PlotContact(ReferencePositions refPos, double degrees, double radius, double altitude, int speed, int course, ContactTypes contactType = ContactTypes.AirUnknown)
-        {
-            Point offset = new Point(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
-            switch (refPos)
-            {
-                case ReferencePositions.BullsEye:
-                    offset = BullsEye;
-                    break;
-                case ReferencePositions.HomePlate:
-                    offset = HomePlate;
-                    break;
-                default:
-                    break;
-            }
-
-            return PlotContact(offset, radius, degrees, altitude, speed, course, contactType);
-        }
-
-        /// <summary>
         /// Find all contacts on the radar using a point and detection window
         /// </summary>
         /// <param name="checkPoint"><see cref="Point"/>The center point of the search</param>
@@ -134,48 +90,76 @@ namespace TacticsLibrary.DrawObjects
         public List<IContact> FindContact(Point checkPoint, Size detectionWindow)
         {
             var contactList = new List<IContact>();
-            checkPoint.Offset(new Point(detectionWindow.GetCenterWidth(), detectionWindow.GetCenterHeight()));
+            checkPoint.Offset(new Point(-1 * detectionWindow.GetCenterWidth(), -1 * detectionWindow.GetCenterHeight()));
             var detectionArea = new Rectangle(checkPoint, detectionWindow);
 
-            if(CurrentContacts.Values.Any(contact =>
+            if (Logger.IsDebugEnabled)
+            {
+                Logger.Debug($"FindWindow: {detectionArea}");
+            }
+
+            // First check for any hits
+            if (CurrentContacts.Values.Any(contact =>
             {
                 return detectionArea.IntersectsWith(contact.DetectionWindow);
             }) == true)
             {
+                Logger.Info($"Contact(s) found");
+                // There were hits so get the contacts
                 contactList.AddRange(CurrentContacts.Values.ToList().FindAll(match =>
                 {
                     return detectionArea.IntersectsWith(match.DetectionWindow);
                 }));
             }
 
+            if (contactList.Count > 0)
+            {
+                Logger.Info($"Found {contactList.Count} contact(s) in {detectionArea}");
+                if (Logger.IsDebugEnabled)
+                {
+                    contactList.ForEach(contact =>
+                    {
+                        Logger.Debug($"{contact}");
+                    });
+                }
+            }
+            else
+            {
+                Logger.Info($"No contacts found in {detectionArea}");
+            }
             return contactList;
         }
          
         /// <summary>
         /// Adds a point as a type and class of contact 
         /// </summary>
-        /// <param name="newPoint">Relative position from (0,0) <see cref="Point"/></param>
-        /// <param name="contactType">Contact type <see cref="ContactTypes"/></param>
-        public void AddContact(Contact newPoint, ContactTypes contactType)
+        /// <param name="newContact">Relative position from (0,0) <see cref="IContact"/></param>
+        public void AddContact(IContact newContact)
         {
             if(CurrentContacts == null)
             {
                 CurrentContacts = new SortedList<Guid, IContact>();
             }
-            if (!CurrentContacts.ContainsKey(newPoint.UniqueId))
+            if (!CurrentContacts.ContainsKey(newContact.UniqueId))
             {
-                CurrentContacts.Add(newPoint.UniqueId, newPoint);
+                CurrentContacts.Add(newContact.UniqueId, newContact);
+                newContact.UpdatePending += Contact_UpdatePending;
+                Logger.Debug($"Added contact: {newContact}");
+            }
+            else
+            {
+                Logger.Warn($"Already found reference to contact {newContact}");
             }
 
-            newPoint.UpdatePending += NewPoint_UpdatePending;
         }
 
         public void AddReference(Point refLocation, string refName, Image refImage)
         {
         }
 
-        private void NewPoint_UpdatePending(object sender, EventArgs e)
+        private void Contact_UpdatePending(object sender, EventArgs e)
         {
+            Logger.Debug($"Updating contact: {sender as IContact}");
             OnUpdatePending(new EventArgs());
         }
     }

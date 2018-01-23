@@ -24,7 +24,7 @@ namespace TacticsLibrary.Converters
             }
             else
             {
-                actualResult.X = ((NEGATIVE) * (viewPortExtent.GetCenterWidth())) - plottedPoint.X;
+                actualResult.X = NEGATIVE * (viewPortExtent.GetCenterWidth() - plottedPoint.X);
             }
 
             actualResult.Y = viewPortExtent.GetCenterHeight() - plottedPoint.Y;
