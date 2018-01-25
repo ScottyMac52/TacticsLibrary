@@ -9,13 +9,15 @@ namespace TacticsLibrary.Interfaces
     public interface IRadar
     {
         Size ViewPortExtent { get; }
-        Point BullsEye { get; }
+        PointF OwnShip { get; }
+        PointF BullsEye { get; }
+        PointF HomePlate { get; }
         SortedList<Guid, IContact> CurrentContacts { get; }
         float Radius { get; set; }
         int RangeRings { get; set; }
         float RingSep { get; set; }
         void AddContact(IContact newContact);
-        void AddReference(Point refLocation, string refName, Image refImage);
+        void AddReference(PointF refLocation, string refName, Image refImage);
         void Draw(IGraphics g);
         List<IContact> FindContact(Point checkPoint, Size detectionWindow);
     }

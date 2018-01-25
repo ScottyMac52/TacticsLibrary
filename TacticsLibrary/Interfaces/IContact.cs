@@ -12,8 +12,8 @@ namespace TacticsLibrary.Interfaces
         DateTime TimeStamp { get;  }
         ContactTypes ContactType { get; }
         DateTime LastUpdate { get; }
-        Point Position { get; }
-        Point RelativePosition { get; }
+        PointF Position { get; }
+        PointF RelativePosition { get; }
         PolarCoordinate PolarPosit { get;  }
         Rectangle DetectionWindow { get; }
         System.Threading.Timer TrackTimer { get; }

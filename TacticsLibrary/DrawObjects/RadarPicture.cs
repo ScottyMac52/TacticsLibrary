@@ -28,9 +28,9 @@ namespace TacticsLibrary.DrawObjects
         public int RangeRings { get; set; }
         public SortedList<Guid, IContact> CurrentContacts { get; protected set; }
         public Size ViewPortExtent { get; protected set; }
-        public Point BullsEye { get; private set; }
-        public Point HomePlate { get; private set; }
-        public Point OwnShip => new Point(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
+        public PointF BullsEye { get; private set; }
+        public PointF HomePlate { get; private set; }
+        public PointF OwnShip => new PointF(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
         public event EventHandler UpdatePending;
 
         protected virtual void OnUpdatePending(EventArgs e)
@@ -38,7 +38,7 @@ namespace TacticsLibrary.DrawObjects
             UpdatePending?.Invoke(this, e);
         }
 
-        public RadarPicture(Point bullsEye, Point homePlate, Size viewPortExtent, ILog logger = null)
+        public RadarPicture(PointF bullsEye, PointF homePlate, Size viewPortExtent, ILog logger = null)
         {
             BullsEye = bullsEye;
             HomePlate = homePlate;
@@ -84,7 +84,7 @@ namespace TacticsLibrary.DrawObjects
         /// <summary>
         /// Find all contacts on the radar using a point and detection window
         /// </summary>
-        /// <param name="checkPoint"><see cref="Point"/>The center point of the search</param>
+        /// <param name="checkPoint"><see cref="PointF"/>The center point of the search</param>
         /// <param name="detectionWindow"><see cref="Size"/>The size of the detction window</param>
         /// <returns><see cref="List{Contact}"/></returns>
         public List<IContact> FindContact(Point checkPoint, Size detectionWindow)
@@ -153,7 +153,7 @@ namespace TacticsLibrary.DrawObjects
 
         }
 
-        public void AddReference(Point refLocation, string refName, Image refImage)
+        public void AddReference(PointF refLocation, string refName, Image refImage)
         {
         }
 

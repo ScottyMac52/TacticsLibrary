@@ -1,6 +1,6 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Drawing;
-using System.Windows.Forms;
 using TacticsLibrary.Converters;
 using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
@@ -48,13 +48,14 @@ namespace TacticsLibrary.DrawObjects
         /// Contact requires an update
         /// </summary>
         public event EventHandler UpdatePending;
+        public ILog Logger { get; protected set; }
 
         #region Properties that can be externally changed
 
         /// <summary>
         /// Position relative to (0,0) in coordinate system
         /// </summary>
-        public Point Position { get; internal set; }
+        public PointF Position { get; internal set; }
         /// <summary>
         /// The current polar position of the contact
         /// </summary>
@@ -80,7 +81,7 @@ namespace TacticsLibrary.DrawObjects
         /// </summary>
         /// <see cref="Rectangle"/>
         public Rectangle DetectionWindow { get; internal set; }
-        public Point RelativePosition { get; internal set; }
+        public PointF RelativePosition { get; internal set; }
 
         #endregion Properties that can be externally changed
 
@@ -104,10 +105,21 @@ namespace TacticsLibrary.DrawObjects
             LastUpdate = TimeStamp;
 
             // Calculate and set this contacts Detection Window
-            TrackTimer = new System.Threading.Timer(TimerCall, UniqueId, 0, 1000);
+            TrackTimer = new System.Threading.Timer(TimerCall, UniqueId, 0, 10000);
+
+            if(Logger == null)
+            {
+                Logger = LogManager.GetLogger(typeof(Contact));
+            }
         }
 
-        #region IEquatable<HistoricalPoint> Implementation
+        public Contact(IRadar detectedBy, ILog logger) 
+            : this(detectedBy)
+        {
+            Logger = logger;
+        }
+
+        #region IEquatable<Contact> Implementation
 
         /// <summary>
         /// Compares this contact with another via the Position ONLY
@@ -116,10 +128,10 @@ namespace TacticsLibrary.DrawObjects
         /// <returns></returns>
         public bool Equals(Contact other)
         {
-            return Position == other.Position;
+            return Position == other.Position && Altitude == other.Altitude;
         }
 
-        #endregion IEquatable<HistoricalPoint> Implementation
+        #endregion IEquatable<Concat> Implementation
 
         private void TimerCall(object state)
         {
@@ -135,10 +147,14 @@ namespace TacticsLibrary.DrawObjects
                 var distance = timeSinceLastUpdate.TotalSeconds * (Speed/SECONDS_PER_HOUR);
 
                 // Get the new position based on course and distance traveled
-                var newPos = CoordinateConverter.CalculatePointFromDegrees(Position, distance, Heading);
+                var newPos = CoordinateConverter.CalculatePointFromDegrees(Position, new PolarCoordinate(Heading, distance), CoordinateConverter.ROUND_DIGITS);
+
+                Logger.Info($"{UniqueId}: {ContactType} {Position} {RelativePosition} {PolarPosit} moved to");
 
                 Position = newPos;
+                RelativePosition = newPos.GetRelativePosition(DetectedBy.ViewPortExtent);
                 PolarPosit = newPos.GetRelativePosition(DetectedBy.ViewPortExtent).GetPolarCoord();
+                Logger.Info($"{newPos} {RelativePosition} {PolarPosit}");
 
                 // Notify the change in Position
                 OnUpdatePending(new EventArgs());
@@ -148,7 +164,7 @@ namespace TacticsLibrary.DrawObjects
 
         public void Draw(IGraphics g)
         {
-            ContactDrawer = new DrawContact(this, 10.0, DetectedBy.ViewPortExtent);
+            ContactDrawer = new DrawContact(Logger, this, 10.0, DetectedBy.ViewPortExtent);
             ContactDrawer.Draw(g);
         }
 

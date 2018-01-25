@@ -21,8 +21,8 @@ namespace TacticsLibrary.tests
         public void TestConversionOfAbsCenterCoordinateToRelative()
         {
             // ARRANGE
-            var plottedPoint = new Point(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
-            var expectedResult = new Point(0, 0);
+            var plottedPoint = new PointF(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
+            var expectedResult = new PointF(0, 0);
 
             // ACT and ASSERT
             VerifyCoordinates(plottedPoint, expectedResult);
@@ -33,8 +33,8 @@ namespace TacticsLibrary.tests
         public void TestConversionOfAbsTopLeftCoordinateToRelative()
         {
             // ARRANGE
-            var plottedPoint = new Point(0,0);
-            var expectedResult = new Point( PositionConverter.NEGATIVE * ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
+            var plottedPoint = new PointF(0,0);
+            var expectedResult = new PointF( PositionConverter.NEGATIVE * ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
 
             // ACT and ASSERT
             VerifyCoordinates(plottedPoint, expectedResult);
@@ -44,8 +44,8 @@ namespace TacticsLibrary.tests
         public void TestConversionOfAbsTopRightCoordinateToRelative()
         {
             // ARRANGE
-            var plottedPoint = new Point(ViewPortExtent.Width, 0);
-            var expectedResult = new Point(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
+            var plottedPoint = new PointF(ViewPortExtent.Width, 0);
+            var expectedResult = new PointF(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
 
             // ACT and ASSERT
             VerifyCoordinates(plottedPoint, expectedResult);
@@ -55,14 +55,14 @@ namespace TacticsLibrary.tests
         public void TestConversionOfAbsBottomRightCoordinateToRelative()
         {
             // ARRANGE
-            var plottedPoint = new Point(ViewPortExtent.Width, ViewPortExtent.Height);
-            var expectedResult = new Point(ViewPortExtent.GetCenterWidth(), PositionConverter.NEGATIVE * ViewPortExtent.GetCenterHeight());
+            var plottedPoint = new PointF(ViewPortExtent.Width, ViewPortExtent.Height);
+            var expectedResult = new PointF(ViewPortExtent.GetCenterWidth(), PositionConverter.NEGATIVE * ViewPortExtent.GetCenterHeight());
 
             // ACT and ASSERT
             VerifyCoordinates(plottedPoint, expectedResult);
         }
 
-        private void VerifyCoordinates(Point plottedPoint, Point expectedResult)
+        private void VerifyCoordinates(PointF plottedPoint, PointF expectedResult)
         {
             // ACT
             var actualResult = plottedPoint.GetRelativePosition(ViewPortExtent);

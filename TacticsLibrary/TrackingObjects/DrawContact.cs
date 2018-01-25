@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Drawing;
 using TacticsLibrary.Converters;
 using TacticsLibrary.Enums;
@@ -12,14 +13,16 @@ namespace TacticsLibrary.TrackingObjects
         public const int POSITION_OFFSET = 10;
         private const double SECONDS_PER_HOUR = 3600.00;
         public IContact Contact { get; private set; }
+        public ILog Logger { get; private set; }
         public Rectangle DrawArea { get; private set; }
         public string ReferenceText { get; private set; }
         public IGraphics GraphicsContext { get; private set; }
         public double VelocityVectorTime { get; private set; }
         public Size ViewPortExtent { get; private set; }
 
-        public DrawContact(IContact contact, double velocityVectorTime, Size viewPortExtent)
+        public DrawContact(ILog logger, IContact contact, double velocityVectorTime, Size viewPortExtent)
         {
+            Logger = logger;
             Contact = contact;
             VelocityVectorTime = velocityVectorTime;
             ViewPortExtent = viewPortExtent;
@@ -35,7 +38,7 @@ namespace TacticsLibrary.TrackingObjects
             // Now calculate the contacts movement in that timespan
             var milesPerSecond = (Contact.Speed / SECONDS_PER_HOUR);
             var distance = VelocityVectorTime * milesPerSecond;
-            var newPos = CoordinateConverter.CalculatePointFromDegrees(Contact.Position, distance, Contact.Heading);
+            var newPos = CoordinateConverter.CalculatePointFromDegrees(Contact.Position, new PolarCoordinate(Contact.Heading, distance), CoordinateConverter.ROUND_DIGITS);
             GraphicsContext.DrawLine(Pens.Green, Contact.Position, newPos);
         }
 
@@ -47,8 +50,8 @@ namespace TacticsLibrary.TrackingObjects
         {
             GraphicsContext = g;
 
-            var topLeft = new Point(Contact.Position.X - POSITION_OFFSET, Contact.Position.Y - POSITION_OFFSET);
-            DrawArea = new Rectangle(topLeft, new Size(POSITION_OFFSET * 2, POSITION_OFFSET * 2));
+            var topLeft = new PointF(Contact.Position.X - POSITION_OFFSET, Contact.Position.Y - POSITION_OFFSET);
+            DrawArea = new Rectangle(topLeft.ConvertTo(), new Size(POSITION_OFFSET * 2, POSITION_OFFSET * 2));
 
             // Draw the point of the contact in green
             GraphicsContext.FillEllipse(Brushes.Green, Contact.Position.X, Contact.Position.Y, 2, 2);
@@ -103,8 +106,8 @@ namespace TacticsLibrary.TrackingObjects
         /// <param name="g"><see cref="IGraphics"/></param>
         public void DrawText()
         {
-            Point drawText = DrawArea.Location;
-            drawText.Offset(new Point(20, 20));
+            PointF drawText = DrawArea.Location;
+            drawText.Offset(new PointF(20.0F, -20.0F), 4);
             ReferenceText = $"{Contact.PolarPosit} - {Contact.Heading}° ";
             GraphicsContext.DrawString(ReferenceText, SystemFonts.StatusFont, Brushes.White, drawText);
         }
@@ -113,7 +116,7 @@ namespace TacticsLibrary.TrackingObjects
         /// Draws a ^ at the position using the Top Left corner of the rectangle as reference
         /// </summary>
         /// <param name="topLeft"><see cref="Point"/></param>
-        public void DrawHostileAir(Point topLeft)
+        public void DrawHostileAir(PointF topLeft)
         {
             DrawCarat(topLeft, Pens.Red);
         }
@@ -122,7 +125,7 @@ namespace TacticsLibrary.TrackingObjects
         /// Draws a hostile subsurface contact
         /// </summary>
         /// <param name="topLeft"><see cref="Point"/></param>
-        public void DrawHostileSub(Point topLeft)
+        public void DrawHostileSub(PointF topLeft)
         {
             DrawUpsidedownCarat(topLeft, Pens.Red);
         }
@@ -131,7 +134,7 @@ namespace TacticsLibrary.TrackingObjects
         /// Draws a hostile surface contact
         /// </summary>
         /// <param name="topLeft"><see cref="Point"/></param>
-        public void DrawHostileSurface(Point topLeft)
+        public void DrawHostileSurface(PointF topLeft)
         {
             DrawCarat(topLeft, Pens.Red);
             DrawUpsidedownCarat(topLeft, Pens.Red);
@@ -172,11 +175,11 @@ namespace TacticsLibrary.TrackingObjects
         /// <summary>
         /// Draws a ^ at the position using the Top Left for an enemy air contact
         /// </summary>
-        /// <param name="topLeft"><see cref="Point"/></param>
+        /// <param name="topLeft"><see cref="PointF"/></param>
         /// <param name="color"><see cref="Pen"/></param>
-        public void DrawCarat(Point topLeft, Pen color)
+        public void DrawCarat(PointF topLeft, Pen color)
         {
-            GraphicsContext.DrawLines(color, new Point[] { new Point(topLeft.X, Contact.Position.Y), new Point(Contact.Position.X, topLeft.Y), new Point(topLeft.X + (POSITION_OFFSET * 2), Contact.Position.Y) });
+            GraphicsContext.DrawLines(color, new PointF[] { new PointF(topLeft.X, Contact.Position.Y), new PointF(Contact.Position.X, topLeft.Y), new PointF(topLeft.X + (POSITION_OFFSET * 2), Contact.Position.Y) });
         }
 
         /// <summary>
@@ -184,9 +187,9 @@ namespace TacticsLibrary.TrackingObjects
         /// </summary>
         /// <param name="topLeft"><see cref="Point"/></param>
         /// <param name="color"><see cref="Pen"/></param>
-        public void DrawUpsidedownCarat(Point topLeft, Pen color)
+        public void DrawUpsidedownCarat(PointF topLeft, Pen color)
         {
-            GraphicsContext.DrawLines(color, new Point[] { new Point(topLeft.X, Contact.Position.Y), new Point(Contact.Position.X, Contact.Position.Y + POSITION_OFFSET), new Point(topLeft.X + (POSITION_OFFSET * 2), Contact.Position.Y) });
+            GraphicsContext.DrawLines(color, new PointF[] { new PointF(topLeft.X, Contact.Position.Y), new PointF(Contact.Position.X, Contact.Position.Y + POSITION_OFFSET), new PointF(topLeft.X + (POSITION_OFFSET * 2), Contact.Position.Y) });
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using TacticsLibrary.Adapters;
+using TacticsLibrary.Converters;
 using TacticsLibrary.DrawObjects;
 using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
@@ -35,7 +36,13 @@ namespace TacticsLibrary
         {
             base.OnLoad(e);
             RandomNumberGen = new Random((int)DateTime.Now.Ticks);
-            //var randomPlots = GenerateRandomPlots(RadarReceiver.ViewPortExtent.GetCenterWidth(), RandomNumberGen.Next(10));
+
+
+
+            var randomPlots = GenerateRandomPlots(RadarReceiver.BullsEye, RadarReceiver.ViewPortExtent.GetCenterWidth(), 1).First();
+
+
+
             RefreshContactList();
             plotPanel.Invalidate();
         }
@@ -43,10 +50,11 @@ namespace TacticsLibrary
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="relativePosition">Offset addition from this point</param>
         /// <param name="rMax"></param>
         /// <param name="nPlots"></param>
         /// <returns></returns>
-        private List<IContact> GenerateRandomPlots(double rMax, int nPlots)
+        private List<IContact> GenerateRandomPlots(PointF relativePosition, double rMax, int nPlots)
         {
             var randPlots = new List<IContact>();
 
@@ -59,7 +67,7 @@ namespace TacticsLibrary
                 var speed = contactType.ToString().Contains("Air") ? RandomNumberGen.Next(300, 10000) : contactType.ToString().Contains("Missile") ? RandomNumberGen.Next(3000, 100000) : RandomNumberGen.Next(50);
                 var heading = RandomNumberGen.Next(360);
                 var polarPosition = new PolarCoordinate(randomBearing, randomRange);
-                var newContact = CreateContactAtPolarCoordinate(contactType, polarPosition, heading, speed, altitude);
+                var newContact = CreateContactAtPolarCoordinate(relativePosition, contactType, polarPosition, heading, speed, altitude);
                 Logger.Info($"Adding contact: {newContact} as a random contact.");
                 randPlots.Add(newContact);
                 RadarReceiver.AddContact(newContact);
@@ -144,7 +152,7 @@ namespace TacticsLibrary
         /// <returns></returns>
         private IContact CreateContactAtPoint(ContactTypes contactType, Point absolutePosition, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
         {
-            var relativePosition = absolutePosition.GetRelativePosition(RadarReceiver.ViewPortExtent);
+            var relativePosition = ((PointF) absolutePosition).GetRelativePosition(RadarReceiver.ViewPortExtent);
             var polarCoord = relativePosition.GetPolarCoord();
             var detectStartPoint = absolutePosition;
             detectStartPoint.Offset(-1 * DrawContact.POSITION_OFFSET, -1 * DrawContact.POSITION_OFFSET);
@@ -165,9 +173,20 @@ namespace TacticsLibrary
             return newContact;
         }
 
-        private IContact CreateContactAtPolarCoordinate(ContactTypes contactType, PolarCoordinate polarCoord, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="relativeTo"></param>
+        /// <param name="contactType"></param>
+        /// <param name="polarCoord"></param>
+        /// <param name="heading"></param>
+        /// <param name="speed"></param>
+        /// <param name="altitude"></param>
+        /// <returns></returns>
+        private IContact CreateContactAtPolarCoordinate(PointF relativeTo, ContactTypes contactType, PolarCoordinate polarCoord, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
         {
-            var absolutePosition = polarCoord.GetPoint().GetAbsolutePosition(RadarReceiver.ViewPortExtent);
+            var floatPos = polarCoord.GetPoint(relativeTo, CoordinateConverter.ROUND_DIGITS).GetAbsolutePosition(RadarReceiver.ViewPortExtent);
+            var absolutePosition = new Point((int)floatPos.X, (int)floatPos.Y);
             return CreateContactAtPoint(contactType, absolutePosition, heading, speed, altitude);
         }
 
@@ -184,7 +203,8 @@ namespace TacticsLibrary
         private void plotPanel_MouseMove(object sender, MouseEventArgs e)
         {
             lblPosition.Text = $"{e.Location}";
-            var relativePos = e.Location.GetRelativePosition(plotPanel.ClientSize);
+            var pointF = e.Location.ConvertTo();
+            var relativePos = pointF.GetRelativePosition(plotPanel.ClientSize);
             lblPositionRelative.Text = $"{relativePos}";
             lblPolarPosition.Text = $"{relativePos.GetPolarCoord()}";
         }

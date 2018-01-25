@@ -14,7 +14,7 @@ namespace TacticsLibrary.Adapters
             g = graphics;
         }
 
-        public void DrawLine(Pen color, Point start, Point end)
+        public void DrawLine(Pen color, PointF start, PointF end)
         {
             g.DrawLine(color, start, end);
         }
@@ -44,12 +44,12 @@ namespace TacticsLibrary.Adapters
             g.DrawEllipse(pen, x, y, width, height);
         }
 
-        public void DrawLines(Pen color, Point[] point)
+        public void DrawLines(Pen color, PointF[] point)
         {
             g.DrawLines(color, point);
         }
 
-        public void DrawString(string text, Font font, Brush brush, Point point)
+        public void DrawString(string text, Font font, Brush brush, PointF point)
         {
             g.DrawString(text, font, brush, point);
         }
@@ -62,6 +62,11 @@ namespace TacticsLibrary.Adapters
         public void FillRectangle(Brush brush, int x, int y, int width, int height)
         {
             g.FillEllipse(brush, x, y, width, height);
+        }
+
+        public void FillRectangle(Brush brush, float x, float y, float width, float height)
+        {
+            g.FillRectangle(brush, x, y, width, height);
         }
     }
 }
