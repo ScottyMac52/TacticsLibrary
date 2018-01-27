@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using TacticsLibrary.Enums;
 using TacticsLibrary.TrackingObjects;
@@ -15,7 +16,7 @@ namespace TacticsLibrary.Interfaces
         PointF Position { get; }
         PointF RelativePosition { get; }
         PolarCoordinate PolarPosit { get;  }
-        Rectangle DetectionWindow { get; }
+        RectangleF DetectionWindow { get; }
         System.Threading.Timer TrackTimer { get; }
         event EventHandler UpdatePending;
         string ToString();
@@ -23,6 +24,7 @@ namespace TacticsLibrary.Interfaces
         double Speed { get; set; }
         double Altitude { get; set; }
         double Heading { get; set; }
-
+        IRadar DetectedBy { get; }
+        event PropertyChangedEventHandler PropertyChanged;
     }
 }

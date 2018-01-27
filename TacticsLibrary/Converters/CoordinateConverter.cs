@@ -12,10 +12,17 @@ namespace TacticsLibrary.Converters
         public const double NORTH = 360.00;
         public const double SOUTH = 180.00;
         public const double EAST = 90.00;
+
         public const double WEST = 270.00;
 
+        //public static PolarCoordinate GetPolarCoordinateFromPoint(PointF plottedPoint, PointF offsetFrom)
+        //{
+
+        //}
+
+
         /// <summary>
-        /// Calculates the polar coordinate of a floating point Point
+        /// Calculates the polar coordinate in Compass degrees of a floating point Point
         /// </summary>
         /// <param name="plottedPoint"><see cref="PointF"/></param>
         /// <returns><see cref="PolarCoordinate"/></returns>
@@ -32,11 +39,15 @@ namespace TacticsLibrary.Converters
                 cos = plottedPoint.X / z;
                 tan = plottedPoint.Y / plottedPoint.X;
 
-                if (IsZero(sine) && cos == -1.00 && IsZero(tan))
+                if(double.IsNaN(sine) && double.IsNaN(cos) && double.IsNaN(tan))
+                {
+                    angleTheta = NORTH_PRIME;
+                }
+                else if (IsZero(sine) && cos == -1.00 && IsZero(tan))
                 {
                     angleTheta = WEST;
                 }
-                if (IsZero(sine) && cos == 1.00 && IsZero(tan))
+                else if (IsZero(sine) && cos == 1.00 && IsZero(tan))
                 {
                     angleTheta = EAST;
                 }
@@ -76,12 +87,18 @@ namespace TacticsLibrary.Converters
             return new PolarCoordinate(Math.Round(angleTheta, ROUND_DIGITS), Math.Round(z, ROUND_DIGITS));
         }
 
+        /// <summary>
+        /// Calculates the distance between any two points
+        /// </summary>
+        /// <param name="point1"></param>
+        /// <param name="point2"></param>
+        /// <returns></returns>
         public static double GetDistance(Point point1, Point point2)
         {
             var a = (double)(point2.X - point1.X);
             var b = (double)(point2.Y - point1.Y);
 
-            return Math.Sqrt(a * a + b * b);
+            return Math.Round(Math.Sqrt(a * a + b * b), ROUND_DIGITS);
         }
 
         /// <summary>

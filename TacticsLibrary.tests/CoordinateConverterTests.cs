@@ -14,6 +14,7 @@ namespace TacticsLibrary.tests
     public class CoordinateConverterTests
     {
         private const int ROUND_FACTOR = 3;
+        private readonly Size ViewPortExtent = new Size(248, 248);
 
         #region Quandrant 1 Tests
 
@@ -404,57 +405,7 @@ namespace TacticsLibrary.tests
         }
 
         #endregion Quandrant 4 Tests
-
-        #region Distance Tests
-
-        [TestMethod]
-        public void TestDistanceCalculationFor345Triangle()
-        {
-            // ARRANGE
-            var expectedDistance = 5.0;
-            var testPoint1 = new Point(1, 1);
-            var testPoint2 = new Point(4, 5);
-
-            // ACT
-            var actualDistance = CoordinateConverter.GetDistance(testPoint1, testPoint2);
-
-            // ASSERT
-            Assert.AreEqual(expectedDistance, actualDistance);
-        }
-
-        [TestMethod]
-        public void TestDistanceCalculationForNegative345Triangle()
-        {
-            // ARRANGE
-            var expectedDistance = 5.0;
-            var testPoint1 = new Point(-1, -1);
-            var testPoint2 = new Point(-4, -5);
-
-            // ACT
-            var actualDistance = CoordinateConverter.GetDistance(testPoint1, testPoint2);
-
-            // ASSERT
-            Assert.AreEqual(expectedDistance, actualDistance);
-        }
-
-        [TestMethod]
-        public void TestForZeroDistance()
-        {
-            // ARRANGE
-            var expectedDistance = 0.0;
-            var testPoint1 = new Point(4, 5);
-            var testPoint2 = new Point(4, 5);
-
-            // ACT
-            var actualDistance = CoordinateConverter.GetDistance(testPoint1, testPoint2);
-
-            // ASSERT
-            Assert.AreEqual(expectedDistance, actualDistance);
-        }
-
-
-        #endregion Distance Tests
-
+         
         #region Coordinate Conversion from offset tests
 
         [TestMethod]
@@ -462,6 +413,7 @@ namespace TacticsLibrary.tests
         {
             // ARRANGE
             var expectedResult = new PointF(7.778F, 7.778F);
+            var expectedAbsResult = new PointF(255.778F, 240.222F);
             var startPoint = new PointF(.707F, .707F);
 
             // ACT
@@ -469,6 +421,23 @@ namespace TacticsLibrary.tests
 
             // ASSERT
             Assert.AreEqual(expectedResult, actualResult);
+            Assert.AreEqual(expectedAbsResult, actualResult.GetAbsolutePosition(ViewPortExtent));
+        }
+
+        [TestMethod]
+        public void TestOffsetConversionAt135Degrees()
+        {
+            // ARRANGE
+            var expectedResult = new PointF(7.77810669F, -7.77810669F);
+            var expectedAbsResult = new PointF(131.778F, 131.778F);
+            var startPoint = new PointF(.70710678F, -.70710678F);
+
+            // ACT
+            var actualResult = CoordinateConverter.CalculatePointFromDegrees(startPoint, new PolarCoordinate(135, 10), 3);
+
+            // ASSERT
+            Assert.AreEqual(expectedResult, actualResult);
+            Assert.AreEqual(expectedAbsResult, actualResult.GetAbsolutePosition(ViewPortExtent));
         }
 
         #endregion Coordinate Conversion from offset tests

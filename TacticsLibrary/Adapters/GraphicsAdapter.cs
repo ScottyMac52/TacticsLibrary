@@ -19,7 +19,7 @@ namespace TacticsLibrary.Adapters
             g.DrawLine(color, start, end);
         }
 
-        public void DrawArc(Pen color, Rectangle contactArea, int v1, int v2)
+        public void DrawArc(Pen color, RectangleF contactArea, int v1, int v2)
         {
             g.DrawArc(color, contactArea, v1, v2);
         }

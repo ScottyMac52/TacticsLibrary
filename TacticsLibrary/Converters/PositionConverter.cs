@@ -11,10 +11,10 @@ namespace TacticsLibrary.Converters
         /// <summary>
         /// Gets the relative point inside of the viewport represented by the plotted Point
         /// </summary>
-        /// <param name="plottedPoint">Coord inate absolute position <see cref="PointF"/></param>
-        /// <param name="viewPortExtent">Viewport <see cref="Size"/></param>
+        /// <param name="plottedPoint">Coordinate absolute position <see cref="PointF"/></param>
+        /// <param name="viewPortExtent">Viewport <see cref="SizeF"/></param>
         /// <returns>Relative position</returns>
-        public static PointF GetRelativePosition(PointF plottedPoint, Size viewPortExtent)
+        public static PointF GetRelativePosition(PointF plottedPoint, SizeF viewPortExtent)
         {
             var actualResult = plottedPoint;
 
@@ -33,17 +33,28 @@ namespace TacticsLibrary.Converters
         }
 
         /// <summary>
-        /// Converts a position relative to (0,0) in the view port to a position relative to (-MaxX, MaxY)
+        /// Converts a position relative to (0,0) in the center of the view port to an absolute position from (0,0) from the top left corner of the viewport
         /// </summary>
         /// <param name="relativePosition">The relative position from (0,0) in the ViewPortExtent <see cref="PointF"/></param>
         /// <param name="viewPortExtent">The ViewPortExtent <seealso cref="Size"/></param>
         /// <returns>Absolute Postition</returns>
-        public static PointF GetAbsolutePosition(PointF relativePosition, Size viewPortExtent)
+        public static PointF GetAbsolutePosition(PointF relativePosition, SizeF viewPortExtent)
         {
             var actualResult = relativePosition;
-            actualResult.X = viewPortExtent.GetCenterWidth() + relativePosition.X;
-            actualResult.Y = viewPortExtent.GetCenterHeight() - relativePosition.Y;
 
+            var midX = viewPortExtent.GetCenterWidth();
+            var midY = viewPortExtent.GetCenterHeight();
+
+            if(relativePosition.Y <= 0)
+            {
+                actualResult.Y = midY + Math.Abs(relativePosition.Y);
+            }
+            else
+            {
+                actualResult.Y = midY - relativePosition.Y;                    
+            }
+
+            actualResult.X = midX + relativePosition.X;
             return actualResult;
         }
     }

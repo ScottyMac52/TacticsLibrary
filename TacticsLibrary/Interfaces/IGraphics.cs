@@ -13,7 +13,7 @@ namespace TacticsLibrary.Interfaces
         void FillRectangle(Brush brush, int x, int y, int width, int height);
         void FillRectangle(Brush brush, float x, float y, float width, float height);
         void DrawString(string referenceText, Font statusFont, Brush blue, PointF topLeft);
-        void DrawArc(Pen color, Rectangle contactArea, int v1, int v2);
+        void DrawArc(Pen color, RectangleF contactArea, int v1, int v2);
         void DrawLines(Pen color, PointF[] point);
         void FillEllipse(Brush brush, float v1, float v2, float v3, float v4);
     }

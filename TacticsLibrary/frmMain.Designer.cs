@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.lblPolarPosition = new System.Windows.Forms.Label();
+            this.lblPositionRelative = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.lblPosition = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -40,9 +42,7 @@
             this.plotPanel = new System.Windows.Forms.Panel();
             this.lblCurrentWidth = new System.Windows.Forms.Label();
             this.lblCurrentHeight = new System.Windows.Forms.Label();
-            this.lblPositionRelative = new System.Windows.Forms.Label();
             this.gridViewContacts = new System.Windows.Forms.DataGridView();
-            this.lblPolarPosition = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -77,10 +77,26 @@
             this.splitContainer1.SplitterDistance = 248;
             this.splitContainer1.TabIndex = 1;
             // 
+            // lblPolarPosition
+            // 
+            this.lblPolarPosition.AutoSize = true;
+            this.lblPolarPosition.Location = new System.Drawing.Point(51, 305);
+            this.lblPolarPosition.Name = "lblPolarPosition";
+            this.lblPolarPosition.Size = new System.Drawing.Size(0, 13);
+            this.lblPolarPosition.TabIndex = 9;
+            // 
+            // lblPositionRelative
+            // 
+            this.lblPositionRelative.AutoSize = true;
+            this.lblPositionRelative.Location = new System.Drawing.Point(51, 286);
+            this.lblPositionRelative.Name = "lblPositionRelative";
+            this.lblPositionRelative.Size = new System.Drawing.Size(0, 13);
+            this.lblPositionRelative.TabIndex = 8;
+            // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(79, 265);
+            this.label4.Location = new System.Drawing.Point(4, 265);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(44, 13);
             this.label4.TabIndex = 7;
@@ -89,7 +105,7 @@
             // lblPosition
             // 
             this.lblPosition.AutoSize = true;
-            this.lblPosition.Location = new System.Drawing.Point(122, 265);
+            this.lblPosition.Location = new System.Drawing.Point(51, 267);
             this.lblPosition.Name = "lblPosition";
             this.lblPosition.Size = new System.Drawing.Size(0, 13);
             this.lblPosition.TabIndex = 6;
@@ -207,14 +223,6 @@
             this.lblCurrentHeight.Size = new System.Drawing.Size(0, 13);
             this.lblCurrentHeight.TabIndex = 3;
             // 
-            // lblPositionRelative
-            // 
-            this.lblPositionRelative.AutoSize = true;
-            this.lblPositionRelative.Location = new System.Drawing.Point(123, 290);
-            this.lblPositionRelative.Name = "lblPositionRelative";
-            this.lblPositionRelative.Size = new System.Drawing.Size(0, 13);
-            this.lblPositionRelative.TabIndex = 8;
-            // 
             // gridViewContacts
             // 
             this.gridViewContacts.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -222,14 +230,6 @@
             this.gridViewContacts.Name = "gridViewContacts";
             this.gridViewContacts.Size = new System.Drawing.Size(745, 150);
             this.gridViewContacts.TabIndex = 9;
-            // 
-            // lblPolarPosition
-            // 
-            this.lblPolarPosition.AutoSize = true;
-            this.lblPolarPosition.Location = new System.Drawing.Point(122, 303);
-            this.lblPolarPosition.Name = "lblPolarPosition";
-            this.lblPolarPosition.Size = new System.Drawing.Size(0, 13);
-            this.lblPolarPosition.TabIndex = 9;
             // 
             // frmMain
             // 

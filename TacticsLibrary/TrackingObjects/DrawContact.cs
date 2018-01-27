@@ -12,15 +12,17 @@ namespace TacticsLibrary.TrackingObjects
     {
         public const int POSITION_OFFSET = 10;
         private const double SECONDS_PER_HOUR = 3600.00;
+        private const double VELOCITY_VECTOR_FACTOR = 1.0;
+
         public IContact Contact { get; private set; }
         public ILog Logger { get; private set; }
-        public Rectangle DrawArea { get; private set; }
+        public RectangleF DrawArea { get; private set; }
         public string ReferenceText { get; private set; }
         public IGraphics GraphicsContext { get; private set; }
         public double VelocityVectorTime { get; private set; }
-        public Size ViewPortExtent { get; private set; }
+        public SizeF ViewPortExtent { get; private set; }
 
-        public DrawContact(ILog logger, IContact contact, double velocityVectorTime, Size viewPortExtent)
+        public DrawContact(ILog logger, IContact contact, double velocityVectorTime, SizeF viewPortExtent)
         {
             Logger = logger;
             Contact = contact;
@@ -37,9 +39,11 @@ namespace TacticsLibrary.TrackingObjects
             // Get the new position based on course and distance traveled
             // Now calculate the contacts movement in that timespan
             var milesPerSecond = (Contact.Speed / SECONDS_PER_HOUR);
-            var distance = VelocityVectorTime * milesPerSecond;
-            var newPos = CoordinateConverter.CalculatePointFromDegrees(Contact.Position, new PolarCoordinate(Contact.Heading, distance), CoordinateConverter.ROUND_DIGITS);
-            GraphicsContext.DrawLine(Pens.Green, Contact.Position, newPos);
+            var distance = VelocityVectorTime * milesPerSecond * VELOCITY_VECTOR_FACTOR;
+            // Calculate the position after the distance moved in bearing and distance from the current relative position
+            var newPos = CoordinateConverter.CalculatePointFromDegrees(Contact.RelativePosition, new PolarCoordinate(Contact.Heading, distance), CoordinateConverter.ROUND_DIGITS);
+            // Draw a line from the current absolute position to the newly estimated position of the contact
+            GraphicsContext.DrawLine(Pens.Green, Contact.Position, newPos.GetAbsolutePosition(Contact.DetectedBy.ViewPortExtent));
         }
 
         /// <summary>
@@ -51,7 +55,7 @@ namespace TacticsLibrary.TrackingObjects
             GraphicsContext = g;
 
             var topLeft = new PointF(Contact.Position.X - POSITION_OFFSET, Contact.Position.Y - POSITION_OFFSET);
-            DrawArea = new Rectangle(topLeft.ConvertTo(), new Size(POSITION_OFFSET * 2, POSITION_OFFSET * 2));
+            DrawArea = new RectangleF(topLeft, new SizeF(POSITION_OFFSET * 2, POSITION_OFFSET * 2));
 
             // Draw the point of the contact in green
             GraphicsContext.FillEllipse(Brushes.Green, Contact.Position.X, Contact.Position.Y, 2, 2);
@@ -97,7 +101,7 @@ namespace TacticsLibrary.TrackingObjects
             }
 
             DrawVelocityVector();
-            DrawText();
+            // DrawText();
         }
 
         /// <summary>
@@ -145,7 +149,7 @@ namespace TacticsLibrary.TrackingObjects
         /// </summary>
         /// <param name="contactArea"><see cref="Rectangle"/></param>
         /// <param name="color"><see cref="Pen"/></param>
-        public void DrawArc(Rectangle contactArea, Pen color)
+        public void DrawArc(RectangleF contactArea, Pen color)
         {
             // Draw Arc from 180° for 180°
             GraphicsContext.DrawArc(color, contactArea, 180, 180);
@@ -156,7 +160,7 @@ namespace TacticsLibrary.TrackingObjects
         /// </summary>
         /// <param name="contactArea"><see cref="Rectangle"/></param>
         /// <param name="color"><see cref="Pen"/></param>
-        public void DrawUpsidedownArc(Rectangle contactArea, Pen color)
+        public void DrawUpsidedownArc(RectangleF contactArea, Pen color)
         {
             // Draw an Arc from 0° to 180°
             GraphicsContext.DrawArc(color, contactArea, 0, 180);
@@ -167,7 +171,7 @@ namespace TacticsLibrary.TrackingObjects
         /// </summary>
         /// <param name="contactArea"><see cref="Rectangle"/></param>
         /// <param name="color"><see cref="Pen"/></param>
-        public void DrawCircle(Rectangle contactArea, Pen color)
+        public void DrawCircle(RectangleF contactArea, Pen color)
         {
             GraphicsContext.DrawEllipse(color, contactArea);
         }

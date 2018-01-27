@@ -8,10 +8,11 @@ using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 using TacticsLibrary.TrackingObjects;
 using log4net;
+using System.Windows.Forms;
 
 namespace TacticsLibrary.DrawObjects
 {
-    public class RadarPicture : IRadar, IViewPorts
+    public class RadarPicture : Control, IRadar
     {
         public ILog Logger { get; protected set; }
         /// <summary>
@@ -27,7 +28,7 @@ namespace TacticsLibrary.DrawObjects
         /// </summary>
         public int RangeRings { get; set; }
         public SortedList<Guid, IContact> CurrentContacts { get; protected set; }
-        public Size ViewPortExtent { get; protected set; }
+        public SizeF ViewPortExtent { get; protected set; }
         public PointF BullsEye { get; private set; }
         public PointF HomePlate { get; private set; }
         public PointF OwnShip => new PointF(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
@@ -38,7 +39,7 @@ namespace TacticsLibrary.DrawObjects
             UpdatePending?.Invoke(this, e);
         }
 
-        public RadarPicture(PointF bullsEye, PointF homePlate, Size viewPortExtent, ILog logger = null)
+        public RadarPicture(PointF bullsEye, PointF homePlate, SizeF viewPortExtent, ILog logger = null)
         {
             BullsEye = bullsEye;
             HomePlate = homePlate;
@@ -85,13 +86,14 @@ namespace TacticsLibrary.DrawObjects
         /// Find all contacts on the radar using a point and detection window
         /// </summary>
         /// <param name="checkPoint"><see cref="PointF"/>The center point of the search</param>
-        /// <param name="detectionWindow"><see cref="Size"/>The size of the detction window</param>
+        /// <param name="detectionWindow"><see cref="SizeF"/>The size of the detction window</param>
+        /// <param name="roundingDigits"></param>
         /// <returns><see cref="List{Contact}"/></returns>
-        public List<IContact> FindContact(Point checkPoint, Size detectionWindow)
+        public List<IContact> FindContact(PointF checkPoint, SizeF detectionWindow, int roundingDigits)
         {
             var contactList = new List<IContact>();
-            checkPoint.Offset(new Point(-1 * detectionWindow.GetCenterWidth(), -1 * detectionWindow.GetCenterHeight()));
-            var detectionArea = new Rectangle(checkPoint, detectionWindow);
+            checkPoint.Offset(new PointF(-1 * detectionWindow.GetCenterWidth(), -1 * detectionWindow.GetCenterHeight()), roundingDigits);
+            var detectionArea = new RectangleF(checkPoint, detectionWindow);
 
             if (Logger.IsDebugEnabled)
             {

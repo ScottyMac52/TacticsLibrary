@@ -1,5 +1,6 @@
 ﻿using log4net;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using TacticsLibrary.Converters;
 using TacticsLibrary.Enums;
@@ -12,10 +13,13 @@ namespace TacticsLibrary.DrawObjects
     /// <summary>
     /// Encapsulates a contact 
     /// </summary>
-    public class Contact : IVisibleObjects, IEquatable<Contact>, IContact
+    public class Contact : IVisibleObjects, IEquatable<Contact>, IContact, INotifyPropertyChanged
     {
         private const double SECONDS_PER_HOUR = 3600.00;
-
+        private double _speed;
+        private double _heading;
+        private double _altitude;
+        
         /// <summary>
         /// Track Timer
         /// </summary>
@@ -48,42 +52,68 @@ namespace TacticsLibrary.DrawObjects
         /// Contact requires an update
         /// </summary>
         public event EventHandler UpdatePending;
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public ILog Logger { get; protected set; }
 
-        #region Properties that can be externally changed
-
         /// <summary>
-        /// Position relative to (0,0) in coordinate system
+        /// Position absolute to (0,0) in coordinate system
         /// </summary>
         public PointF Position { get; internal set; }
         /// <summary>
+        /// Position relative to the center of the coordinate system 
+        /// </summary>
+        public PointF RelativePosition => Position.GetRelativePosition(DetectedBy?.ViewPortExtent ?? new SizeF(498, 498));
+        /// <summary>
         /// The current polar position of the contact
         /// </summary>
-        public PolarCoordinate PolarPosit { get; internal set; }
-        /// <summary>
-        /// Current velocity expressed as units per hour
-        /// </summary>
-        public double Speed { get; set; }
-        /// <summary>
-        /// Altitude expressed in units 
-        /// </summary>
-        public double Altitude { get; set; }
-        /// <summary>
-        /// Current heading of the contact
-        /// </summary>
-        public double Heading { get; set; }
-        /// <summary>
-        /// Last DateTime in UTC that the contact was updated
-        /// </summary>
-        public DateTime LastUpdate { get; internal set; }
+        public PolarCoordinate PolarPosit => GetCurrentPolarPosition();
         /// <summary>
         /// Contacts pre-calculated detection window
         /// </summary>
         /// <see cref="Rectangle"/>
-        public Rectangle DetectionWindow { get; internal set; }
-        public PointF RelativePosition { get; internal set; }
+        public RectangleF DetectionWindow => GetDetectionWindow();
+        /// <summary>
+        /// Last DateTime in UTC that the contact was updated
+        /// </summary>
+        public DateTime LastUpdate { get; internal set; }
+
+
+        #region Properties that can be externally changed
+
+        /// <summary>
+        /// Current velocity expressed as units per hour
+        /// </summary>
+        public double Speed { get { return _speed; } set { _speed = value; OnPropertyChanged(nameof(Speed)); } }
+        /// <summary>
+        /// Altitude expressed in units 
+        /// </summary>
+        public double Altitude { get { return _altitude; } set { _altitude = value; OnPropertyChanged(nameof(Altitude)); } }
+        /// <summary>
+        /// Current heading of the contact
+        /// </summary>
+        public double Heading { get { return _heading; } set { _heading = value; OnPropertyChanged(nameof(Heading)); } }
 
         #endregion Properties that can be externally changed
+
+        private PolarCoordinate GetCurrentPolarPosition()
+        {
+            var relPos = RelativePosition;
+            var polarPosition = relPos.GetPolarCoord();
+
+            return polarPosition;
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private RectangleF GetDetectionWindow()
+        {
+            var detectionStartOffset = Position.Offset(new PointF(-1 * DrawContact.POSITION_OFFSET, -1 * DrawContact.POSITION_OFFSET), 0);
+            return new RectangleF(detectionStartOffset, new Size(DrawContact.POSITION_OFFSET, DrawContact.POSITION_OFFSET));
+        }
 
         /// <summary>
         /// Update pending handler
@@ -147,14 +177,10 @@ namespace TacticsLibrary.DrawObjects
                 var distance = timeSinceLastUpdate.TotalSeconds * (Speed/SECONDS_PER_HOUR);
 
                 // Get the new position based on course and distance traveled
-                var newPos = CoordinateConverter.CalculatePointFromDegrees(Position, new PolarCoordinate(Heading, distance), CoordinateConverter.ROUND_DIGITS);
-
+                var newPos = CoordinateConverter.CalculatePointFromDegrees(RelativePosition, new PolarCoordinate(Heading, distance), CoordinateConverter.ROUND_DIGITS);
                 Logger.Info($"{UniqueId}: {ContactType} {Position} {RelativePosition} {PolarPosit} moved to");
-
-                Position = newPos;
-                RelativePosition = newPos.GetRelativePosition(DetectedBy.ViewPortExtent);
-                PolarPosit = newPos.GetRelativePosition(DetectedBy.ViewPortExtent).GetPolarCoord();
-                Logger.Info($"{newPos} {RelativePosition} {PolarPosit}");
+                Position = newPos.GetAbsolutePosition(DetectedBy.ViewPortExtent);
+                Logger.Info($"{Position} {RelativePosition} {PolarPosit}");
 
                 // Notify the change in Position
                 OnUpdatePending(new EventArgs());

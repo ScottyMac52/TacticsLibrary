@@ -56,10 +56,11 @@
     <Compile Include="Converters\CoordinateConverter.cs" />
     <Compile Include="Converters\PositionConverter.cs" />
     <Compile Include="Interfaces\IRadar.cs" />
-    <Compile Include="Interfaces\IViewPorts.cs" />
     <Compile Include="Interfaces\IVisibleObjects.cs" />
     <Compile Include="DrawObjects\Contact.cs" />
-    <Compile Include="DrawObjects\RadarPicture.cs" />
+    <Compile Include="DrawObjects\RadarPicture.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Enums\ContactTypes.cs" />
     <Compile Include="Enums\ReferencePositions.cs" />
     <Compile Include="Enums\TrigQuadrant.cs" />

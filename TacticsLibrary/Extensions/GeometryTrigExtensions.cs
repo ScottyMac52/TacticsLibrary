@@ -12,14 +12,14 @@ namespace TacticsLibrary.Extensions
 {
     public static class GeometryTrigExtensions
     {
-        public const int HALF = 2;
+        public const float HALF = 2.0F;
 
-        public static int GetCenterWidth(this Size targetRect)
+        public static float GetCenterWidth(this SizeF targetRect)
         {
             return targetRect.Width / HALF;
         }
 
-        public static int GetCenterHeight(this Size targetRect)
+        public static float GetCenterHeight(this SizeF targetRect)
         {
             return targetRect.Height / HALF;
         }
@@ -36,24 +36,14 @@ namespace TacticsLibrary.Extensions
             return new PointF(x, y);
         }
 
-        public static Point ConvertTo(this PointF convertTo)
-        {
-            return new Point((int) Math.Round(convertTo.X, 0), (int) Math.Round(convertTo.Y, 0));
-        }
-
-        public static PointF GetRelativePosition(this PointF plottedPoint, Size viewPort)
+        public static PointF GetRelativePosition(this PointF plottedPoint, SizeF viewPort)
         {
             return PositionConverter.GetRelativePosition(plottedPoint, viewPort);
         }
 
-        public static PointF GetAbsolutePosition(this PointF relativePosition, Size viewPort)
+        public static PointF GetAbsolutePosition(this PointF relativePosition, SizeF viewPort)
         {
             return PositionConverter.GetAbsolutePosition(relativePosition, viewPort);
-        }
-        
-        public static PolarCoordinate GetPolarCoord(this Point plottedPoint)
-        {
-            return CoordinateConverter.GetPolarCoordinateFromPoint(plottedPoint);
         }
 
         public static PolarCoordinate GetPolarCoord(this PointF plottedPoint)

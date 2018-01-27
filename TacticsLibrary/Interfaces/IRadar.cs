@@ -8,7 +8,7 @@ namespace TacticsLibrary.Interfaces
 {
     public interface IRadar
     {
-        Size ViewPortExtent { get; }
+        SizeF ViewPortExtent { get; }
         PointF OwnShip { get; }
         PointF BullsEye { get; }
         PointF HomePlate { get; }
@@ -19,6 +19,6 @@ namespace TacticsLibrary.Interfaces
         void AddContact(IContact newContact);
         void AddReference(PointF refLocation, string refName, Image refImage);
         void Draw(IGraphics g);
-        List<IContact> FindContact(Point checkPoint, Size detectionWindow);
+        List<IContact> FindContact(PointF checkPoint, SizeF detectionWindow, int roundingDigits);
     }
 }
