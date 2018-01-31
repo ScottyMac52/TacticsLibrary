@@ -3,7 +3,7 @@ using System.Drawing;
 using TacticsLibrary.Converters;
 using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
-using TacticsLibrary.TrackingObjects;
+using TacticsLibrary.DrawObjects;
 
 namespace TacticsLibrary.tests
 {

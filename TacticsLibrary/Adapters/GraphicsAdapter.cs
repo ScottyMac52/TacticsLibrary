@@ -19,6 +19,11 @@ namespace TacticsLibrary.Adapters
             g.DrawLine(color, start, end);
         }
 
+        public void DrawRectangle(Pen color, RectangleF rectToDraw)
+        {
+            g.DrawRectangle(color, rectToDraw.X, rectToDraw.Y, rectToDraw.Width, rectToDraw.Height);
+        }
+
         public void DrawArc(Pen color, RectangleF contactArea, int v1, int v2)
         {
             g.DrawArc(color, contactArea, v1, v2);

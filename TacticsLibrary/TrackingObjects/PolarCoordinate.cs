@@ -3,7 +3,7 @@ using System.Drawing;
 using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 
-namespace TacticsLibrary.TrackingObjects
+namespace TacticsLibrary.DrawObjects
 {
     /// <summary>
     /// Encapsulates a Polar Coordinate as two doubles Degrees and Radius

@@ -50,14 +50,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapters\GraphicsAdapter.cs" />
+    <Compile Include="Interfaces\IMarker.cs" />
+    <Compile Include="DrawObjects\Marker.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Interfaces\IContact.cs" />
     <Compile Include="Interfaces\IDrawContact.cs" />
     <Compile Include="Interfaces\IGraphics.cs" />
     <Compile Include="Converters\CoordinateConverter.cs" />
     <Compile Include="Converters\PositionConverter.cs" />
-    <Compile Include="Interfaces\IRadar.cs" />
+    <Compile Include="Interfaces\ISensor.cs" />
     <Compile Include="Interfaces\IVisibleObjects.cs" />
-    <Compile Include="DrawObjects\Contact.cs" />
+    <Compile Include="DrawObjects\Contact.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DrawObjects\RadarPicture.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -72,11 +78,17 @@
     <Compile Include="frmMain.Designer.cs">
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="Models\QuadrantHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TrackingObjects\DrawContact.cs" />
+    <Compile Include="Interfaces\IReferencePoint.cs" />
     <Compile Include="TrackingObjects\PolarCoordinate.cs" />
+    <Compile Include="DrawObjects\ReferencePoint.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <EmbeddedResource Include="DrawObjects\ReferencePoint.resx">
+      <DependentUpon>ReferencePoint.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
     </EmbeddedResource>

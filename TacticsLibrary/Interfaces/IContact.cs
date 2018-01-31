@@ -1,8 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Threading;
 using TacticsLibrary.Enums;
-using TacticsLibrary.TrackingObjects;
+using TacticsLibrary.DrawObjects;
 
 namespace TacticsLibrary.Interfaces
 {
@@ -10,21 +11,26 @@ namespace TacticsLibrary.Interfaces
     {
         void Draw(IGraphics g);
         Guid UniqueId { get; }
-        DateTime TimeStamp { get;  }
+        DateTime TimeStamp { get; }
         ContactTypes ContactType { get; }
         DateTime LastUpdate { get; }
         PointF Position { get; }
         PointF RelativePosition { get; }
-        PolarCoordinate PolarPosit { get;  }
+        PolarCoordinate PolarPosit { get; }
         RectangleF DetectionWindow { get; }
-        System.Threading.Timer TrackTimer { get; }
         event EventHandler UpdatePending;
         string ToString();
 
         double Speed { get; set; }
         double Altitude { get; set; }
         double Heading { get; set; }
-        IRadar DetectedBy { get; }
+        bool Selected { get; set; }
+        bool ShowText { get; set; }
+        ISensor DetectedBy { get; }
         event PropertyChangedEventHandler PropertyChanged;
+
+        Thread ProcessThread { get; }
+        bool Running { get; set; }
+        int? CustomUpdateDuration { get; set; }
     }
 }

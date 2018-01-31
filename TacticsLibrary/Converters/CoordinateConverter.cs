@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using TacticsLibrary.Models;
-using TacticsLibrary.TrackingObjects;
+using TacticsLibrary.DrawObjects;
 
 namespace TacticsLibrary.Converters
 {
@@ -12,14 +11,7 @@ namespace TacticsLibrary.Converters
         public const double NORTH = 360.00;
         public const double SOUTH = 180.00;
         public const double EAST = 90.00;
-
         public const double WEST = 270.00;
-
-        //public static PolarCoordinate GetPolarCoordinateFromPoint(PointF plottedPoint, PointF offsetFrom)
-        //{
-
-        //}
-
 
         /// <summary>
         /// Calculates the polar coordinate in Compass degrees of a floating point Point
@@ -101,26 +93,28 @@ namespace TacticsLibrary.Converters
             return Math.Round(Math.Sqrt(a * a + b * b), ROUND_DIGITS);
         }
 
+   
+
         /// <summary>
-        /// Wrapper to provide for PolarCoordinate support
+        /// Returns a <see cref="PointF"/> that is relative to the offset by <see cref="PolarCoordinate"/>
         /// </summary>
-        /// <param name="offset"></param>
-        /// <param name="polarCoordinate"></param>
-        /// <param name="roundingDigits"></param>
-        /// <returns></returns>
+        /// <param name="offset">Starting position to calculate from, should be a relative position</param>
+        /// <param name="polarCoordinate"><see cref="PolarCoordinate"/> relative to offset</param>
+        /// <param name="roundingDigits">Rounding digits</param>
+        /// <returns><see cref="PointF"/></returns>
         public static PointF CalculatePointFromDegrees(PointF offset, PolarCoordinate polarCoordinate, int roundingDigits)
         {
             return CalculatePointFromDegrees(offset, polarCoordinate.Degrees, polarCoordinate.Radius, roundingDigits);
         }
 
         /// <summary>
-        /// Using an offset calculates a new position using polar coordinates
+        /// Returns a <see cref="PointF"/> that is relative to the offset by degrees° and radius units
         /// </summary>
-        /// <param name="offset"></param>
-        /// <param name="degrees"></param>
-        /// <param name="radius"></param>/*
-        /// <param name="roundingDigits"></param>
-        /// <returns></returns>
+        /// <param name="offset">Starting position to calculate from, should be a relative position</param>
+        /// <param name="degrees">° relative to the offset</param>
+        /// <param name="radius">Distance from the offset</param>/*
+        /// <param name="roundingDigits">Rounding digits</param>
+        /// <returns><see cref="PointF"/></returns>
         private static PointF CalculatePointFromDegrees(PointF offset, double degrees, double radius, int roundingDigits)
         {
             // Subtract the 90 degree offset to account for conversion from polar to compass coordinates

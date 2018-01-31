@@ -203,7 +203,6 @@
             this.plotPanel.Size = new System.Drawing.Size(500, 500);
             this.plotPanel.TabIndex = 1;
             this.plotPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.PlotPanel_Paint);
-            this.plotPanel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseClick);
             this.plotPanel.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseDoubleClick);
             this.plotPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseMove);
             // 
@@ -242,6 +241,7 @@
             this.Controls.Add(this.splitContainer1);
             this.Name = "frmMain";
             this.Text = "Main Plot";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);

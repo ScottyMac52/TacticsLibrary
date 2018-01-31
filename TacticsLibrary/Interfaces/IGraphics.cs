@@ -6,6 +6,7 @@ namespace TacticsLibrary.Interfaces
     {
         Graphics Context { get; }
         void DrawLine(Pen color, PointF start, PointF end);
+        void DrawRectangle(Pen color, RectangleF rectToDraw);
         void DrawEllipse(Pen pen, RectangleF rect);
         void DrawEllipse(Pen pen, float x, float y, float width, float height);
         void DrawEllipse(Pen pen, Rectangle rect);

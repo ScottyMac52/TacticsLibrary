@@ -7,11 +7,10 @@ using System.Threading;
 using System.Windows.Forms;
 using TacticsLibrary.Adapters;
 using TacticsLibrary.Converters;
-using TacticsLibrary.DrawObjects;
 using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
-using TacticsLibrary.TrackingObjects;
+using TacticsLibrary.DrawObjects;
 
 namespace TacticsLibrary
 {
@@ -23,7 +22,7 @@ namespace TacticsLibrary
         int StartAngle = 0;
 
         protected static ILog Logger => LogManager.GetLogger("frmMain");
-        protected IRadar RadarReceiver { get; private set; }
+        protected ISensor RadarReceiver { get; private set; }
         protected Random RandomNumberGen { get; private set; }
         protected PointF CursorPosition { get; set; }
 
@@ -37,9 +36,18 @@ namespace TacticsLibrary
         {
             base.OnLoad(e);
             RandomNumberGen = new Random((int)DateTime.Now.Ticks);
-            // var randomPlots = GenerateRandomPlots(RadarReceiver.OwnShip, RadarReceiver.ViewPortExtent.GetCenterWidth(), 1);
             var newPosition = new PointF(RadarReceiver.ViewPortExtent.GetCenterWidth(), RadarReceiver.ViewPortExtent.GetCenterHeight());
-            CreateContactAtPoint(ContactTypes.AirUnknown, newPosition, 90, 4500, 36000);
+            var newContact = CreateContactAtPoint(newPosition, ContactTypes.AirFriendly, 90, 450, 36000);
+            var chaseContact = CreateContactAtPolarCoordinate(newContact.Position, ContactTypes.AirEnemy, new PolarCoordinate(270.00, 25.00), 90.00, 780, 36000);
+
+            // Create a target that is 180° 25 miles from BullsEye
+            var newBullsEyeTarget = CreateContactAtPolarCoordinate(
+                RadarReceiver.BullsEye.Position,
+                ContactTypes.AirUnknown,
+                new PolarCoordinate(180.00, 100.00),
+                360.00,
+                980.00,
+                52000);
         }
 
         private void Contact_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -96,8 +104,24 @@ namespace TacticsLibrary
 
         private RadarPicture InitializeRadar()
         {
-            var bullsEye = new Point(123, 90);
-            var homePlate = new Point(100, 200);
+            var bullsEye = new Marker()
+            {
+                Position = new PointF(123, 90),
+                Name = "Bullseye",
+                Speed = 0.00,
+                Altitude = 0.00,
+                Heading = 0.00
+            };
+
+            var homePlate = new Marker()
+            {
+                Position = new PointF(100, 200),
+                Name = "Homeplate",
+                Speed = 0.00,
+                Altitude = 0.00,
+                Heading = 0.00
+            };
+
             var radarSize = new Size(plotPanel.ClientSize.Width, plotPanel.ClientSize.Height);
             Logger.Info($"Creating radar picture {radarSize}");
             var rwrReceiver = new RadarPicture(bullsEye, homePlate, radarSize)
@@ -136,11 +160,11 @@ namespace TacticsLibrary
             {
                 ContactTypes contactType = ContactTypes.AirUnknown;
                 var typeToPlot = $"{selectType.Text}{selectClass.Text}";
-                var absolutePosition = new Point(e.X, e.Y);
+                var absolutePosition = new PointF(e.X, e.Y);
 
                 if (Enum.TryParse(typeToPlot, out contactType))
                 {
-                    var newContact = CreateContactAtPoint(contactType, absolutePosition, decimal.ToInt32(contactCourse.Value), decimal.ToInt32(contactSpeed.Value));
+                    var newContact = CreateContactAtPoint(absolutePosition, contactType, decimal.ToInt32(contactCourse.Value), decimal.ToInt32(contactSpeed.Value));
                 }
             }
         }
@@ -148,23 +172,23 @@ namespace TacticsLibrary
         /// <summary>
         /// Method used to add a contact by absolute position
         /// </summary>
-        /// <param name="contactType"></param>
-        /// <param name="absolutePosition"></param>
+        /// <param name="position">Absolute position of contact <see cref="PointF"/></param>
+        /// <param name="contactType">Contact type to create <see cref="ContactTypes"/></param>
         /// <param name="heading"></param>
         /// <param name="speed"></param>
         /// <param name="altitude"></param>
         /// <returns></returns>
-        private IContact CreateContactAtPoint(ContactTypes contactType, PointF absolutePosition, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
+        protected IContact CreateContactAtPoint(PointF position, ContactTypes contactType, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
         {
             var newContact = new Contact(RadarReceiver)
             {
                 ContactType = contactType,
-                Position = absolutePosition,
+                Position = position,
                 Speed = speed,
                 Heading = heading,
-                Altitude = 0.00
+                Altitude = altitude,
             };
-            Logger.Info($"Adding contact: {contactType} as a plotted contact at {absolutePosition}");
+            Logger.Info($"Adding contact: {contactType} as a plotted contact at {position}");
             newContact.PropertyChanged += Contact_PropertyChanged;
             RadarReceiver.AddContact(newContact);
             RefreshContactList();
@@ -177,28 +201,24 @@ namespace TacticsLibrary
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="relativeTo"></param>
+        /// <param name="startAbsolutePosition">Absolute position where the contact is plotted from</param>
         /// <param name="contactType"></param>
-        /// <param name="polarCoord"></param>
+        /// <param name="polarCoord">Bearing and range from absolute position for the new contact</param>
         /// <param name="heading"></param>
         /// <param name="speed"></param>
         /// <param name="altitude"></param>
         /// <returns></returns>
-        private IContact CreateContactAtPolarCoordinate(PointF relativeTo, ContactTypes contactType, PolarCoordinate polarCoord, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
+        public IContact CreateContactAtPolarCoordinate(PointF startAbsolutePosition, ContactTypes contactType, PolarCoordinate polarCoord, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
         {
-            var floatPos = polarCoord.GetPoint(relativeTo, CoordinateConverter.ROUND_DIGITS).GetAbsolutePosition(RadarReceiver.ViewPortExtent);
-            var absolutePosition = new Point((int)floatPos.X, (int)floatPos.Y);
-            return CreateContactAtPoint(contactType, absolutePosition, heading, speed, altitude);
+            var relativePosition = startAbsolutePosition.GetRelativePosition(RadarReceiver.ViewPortExtent);
+            var newRelativePosition = CoordinateConverter.CalculatePointFromDegrees(relativePosition, polarCoord, CoordinateConverter.ROUND_DIGITS);
+            var newAbsolutePosition = newRelativePosition.GetAbsolutePosition(RadarReceiver.ViewPortExtent);
+            return CreateContactAtPoint(newAbsolutePosition, contactType, heading, speed, altitude);
         }
 
         private void plotPanel_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
-            {
-                var absolutePosition = new Point(e.X, e.Y);
-                var contacts = RadarReceiver.FindContact(absolutePosition, new Size(5, 5), CoordinateConverter.ROUND_DIGITS);
-                MessageBox.Show($"Top contact found {contacts.FirstOrDefault()}");
-            }
+
         }
 
         private void plotPanel_MouseMove(object sender, MouseEventArgs e)
@@ -207,7 +227,7 @@ namespace TacticsLibrary
             CursorPosition = e.Location.ConvertTo();
             var pointF = e.Location.ConvertTo();
             var relativePos = pointF.GetRelativePosition(plotPanel.ClientSize);
-            var bullsEyeRelative = RadarReceiver.BullsEye.GetRelativePosition(RadarReceiver.ViewPortExtent);
+            var bullsEyeRelative = RadarReceiver.BullsEye.Position.GetRelativePosition(RadarReceiver.ViewPortExtent);
             lblPositionRelative.Text = $"{relativePos}";
             lblPolarPosition.Text = $"{relativePos.GetPolarCoord()}";
         }
@@ -218,6 +238,21 @@ namespace TacticsLibrary
             var dataBindList = RadarReceiver.CurrentContacts.Values.ToList();
             gridViewContacts.DataSource = dataBindList;
             gridViewContacts.Refresh();
+        }
+
+        private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            RadarReceiver?.CurrentContacts.Values.ToList().ForEach(cont =>
+            {
+                cont.Running = false;
+            });
+
+            Thread.Sleep(1000);
+
+            e.Cancel = RadarReceiver.CurrentContacts.Values.Any(cnt =>
+            {
+                return cnt.ProcessThread.IsAlive;
+            });
         }
     }
 }

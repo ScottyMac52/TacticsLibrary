@@ -57,5 +57,6 @@ namespace TacticsLibrary.Converters
             actualResult.X = midX + relativePosition.X;
             return actualResult;
         }
+         
     }
 }

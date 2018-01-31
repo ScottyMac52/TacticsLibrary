@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using TacticsLibrary.DrawObjects;
+using TacticsLibrary.Interfaces;
 using TacticsLibrary.Enums;
 
 namespace TacticsLibrary.Interfaces
 {
-    public interface IRadar
+    public interface ISensor
     {
         SizeF ViewPortExtent { get; }
         PointF OwnShip { get; }
-        PointF BullsEye { get; }
-        PointF HomePlate { get; }
+        Marker BullsEye { get; }
+        Marker HomePlate { get; }
         SortedList<Guid, IContact> CurrentContacts { get; }
         float Radius { get; set; }
         int RangeRings { get; set; }

@@ -6,7 +6,7 @@ using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 
-namespace TacticsLibrary.TrackingObjects
+namespace TacticsLibrary.DrawObjects
 {
     public class DrawContact : IDrawContact, IVisibleObjects
     {
@@ -101,7 +101,14 @@ namespace TacticsLibrary.TrackingObjects
             }
 
             DrawVelocityVector();
-            // DrawText();
+            if(Contact.Selected)
+            {
+                DrawDetectionWindow(Pens.White);
+            }
+            if(Contact.ShowText)
+            {
+                DrawText();
+            }
         }
 
         /// <summary>
@@ -114,6 +121,15 @@ namespace TacticsLibrary.TrackingObjects
             drawText.Offset(new PointF(20.0F, -20.0F), 4);
             ReferenceText = $"{Contact.PolarPosit} - {Contact.Heading}° ";
             GraphicsContext.DrawString(ReferenceText, SystemFonts.StatusFont, Brushes.White, drawText);
+        }
+
+        /// <summary>
+        /// Draws a detection window around the contact
+        /// </summary>
+        /// <param name="color"></param>
+        public void DrawDetectionWindow(Pen color)
+        {
+            GraphicsContext.DrawRectangle(color, Contact.DetectionWindow);
         }
 
         /// <summary>

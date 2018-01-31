@@ -6,13 +6,13 @@ using System.Drawing.Drawing2D;
 using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
-using TacticsLibrary.TrackingObjects;
+using TacticsLibrary.DrawObjects;
 using log4net;
 using System.Windows.Forms;
 
-namespace TacticsLibrary.DrawObjects
+namespace TacticsLibrary.Interfaces
 {
-    public class RadarPicture : Control, IRadar
+    public class RadarPicture : Control, ISensor
     {
         public ILog Logger { get; protected set; }
         /// <summary>
@@ -29,8 +29,8 @@ namespace TacticsLibrary.DrawObjects
         public int RangeRings { get; set; }
         public SortedList<Guid, IContact> CurrentContacts { get; protected set; }
         public SizeF ViewPortExtent { get; protected set; }
-        public PointF BullsEye { get; private set; }
-        public PointF HomePlate { get; private set; }
+        public Marker BullsEye { get; private set; }
+        public Marker HomePlate { get; private set; }
         public PointF OwnShip => new PointF(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
         public event EventHandler UpdatePending;
 
@@ -39,7 +39,7 @@ namespace TacticsLibrary.DrawObjects
             UpdatePending?.Invoke(this, e);
         }
 
-        public RadarPicture(PointF bullsEye, PointF homePlate, SizeF viewPortExtent, ILog logger = null)
+        public RadarPicture(Marker bullsEye, Marker homePlate, SizeF viewPortExtent, ILog logger = null)
         {
             BullsEye = bullsEye;
             HomePlate = homePlate;
@@ -47,6 +47,21 @@ namespace TacticsLibrary.DrawObjects
             CurrentContacts = new SortedList<Guid, IContact>();
             Logger = logger == null ? LogManager.GetLogger(typeof(RadarPicture)) : logger;
             Logger.Info($"Created radar {ViewPortExtent} BullsEye: {BullsEye} HomePlate: {HomePlate}");
+
+            // Setup the Action for painting the bulls eye
+            BullsEye.PaintMethod = (graphics, refPoint) =>
+            {
+                graphics.FillCircle(Brushes.Blue, refPoint.Position.X, refPoint.Position.Y, 10);
+                graphics.FillCircle(Brushes.Red, refPoint.Position.X, refPoint.Position.Y, 5);
+            };
+
+            // Setup the Action for painting home plate
+            HomePlate.PaintMethod = (graphics, refPoint) =>
+            {
+                graphics.FillCircle(Brushes.White, refPoint.Position.X, refPoint.Position.Y, 10);
+                graphics.FillCircle(Brushes.Blue, refPoint.Position.X, refPoint.Position.Y, 5);
+            };
+
         }
 
         public void Draw(IGraphics g)
@@ -67,13 +82,8 @@ namespace TacticsLibrary.DrawObjects
                 }
             }
 
-            // Paint the BullsEye
-            g.FillCircle(Brushes.Blue, BullsEye.X, BullsEye.Y, 10);
-            g.FillCircle(Brushes.Red, BullsEye.X, BullsEye.Y, 5);
-
-            // Paint Homeplate
-            g.FillCircle(Brushes.White, HomePlate.X, HomePlate.Y, 10);
-            g.FillCircle(Brushes.Blue, HomePlate.X, HomePlate.Y, 5);
+            BullsEye?.PaintMethod?.Invoke(g, BullsEye);
+            HomePlate?.PaintMethod?.Invoke(g, HomePlate);
 
             // Plot all points
             foreach (var item in CurrentContacts)

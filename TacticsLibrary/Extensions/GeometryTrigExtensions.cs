@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TacticsLibrary.Converters;
 using TacticsLibrary.Interfaces;
-using TacticsLibrary.TrackingObjects;
+using TacticsLibrary.DrawObjects;
 
 namespace TacticsLibrary.Extensions
 {
@@ -33,6 +33,13 @@ namespace TacticsLibrary.Extensions
         {
             var x = offset.X + (float)Math.Round(targetPoint.X, roundDigits);
             var y = offset.Y + (float)Math.Round(targetPoint.Y, roundDigits);
+            return new PointF(x, y);
+        }
+
+        public static PointF GetDifference(this PointF point1, PointF point2, int roundDigits)
+        {
+            var x = (float) Math.Round(point1.X - point2.X, roundDigits);
+            var y = (float) Math.Round(point1.Y - point2.Y, roundDigits);
             return new PointF(x, y);
         }
 
