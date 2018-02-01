@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Threading;
 using TacticsLibrary.Enums;
 using TacticsLibrary.DrawObjects;
+using static TacticsLibrary.DrawObjects.ReferencePoint;
 
 namespace TacticsLibrary.Interfaces
 {
@@ -18,7 +19,6 @@ namespace TacticsLibrary.Interfaces
         PointF RelativePosition { get; }
         PolarCoordinate PolarPosit { get; }
         RectangleF DetectionWindow { get; }
-        event EventHandler UpdatePending;
         string ToString();
 
         double Speed { get; set; }
@@ -32,5 +32,7 @@ namespace TacticsLibrary.Interfaces
         Thread ProcessThread { get; }
         bool Running { get; set; }
         int? CustomUpdateDuration { get; set; }
+        event ReferencePointEventHandler UpdatePending;
+
     }
 }

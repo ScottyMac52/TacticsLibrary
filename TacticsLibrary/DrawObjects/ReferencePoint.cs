@@ -10,7 +10,7 @@ namespace TacticsLibrary.DrawObjects
     /// <summary>
     /// Base class for anything displayed in an <see cref="ISensor"/>
     /// </summary>
-    public class ReferencePoint : Control, IReferencePoint, INotifyPropertyChanged
+    public class ReferencePoint : IReferencePoint, INotifyPropertyChanged
     {
         private double _speed;
         private double _heading;
@@ -18,22 +18,20 @@ namespace TacticsLibrary.DrawObjects
         private bool _selected;
         private bool _showText;
 
-        public ReferencePoint()
+        public ReferencePoint(PointF position, SizeF size)
         {
             UniqueId = Guid.NewGuid();
             TimeStamp = DateTime.UtcNow;
-            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
-            BackColor = Color.Transparent;
-            OnCreateControl();
+            Position = position;
         }
 
-        protected override void OnCreateControl()
+        public virtual void Draw(IGraphics g)
         {
-            Size = DetectionWindow.Size.ToSize();
-            Location = new Point((int) Position.X, (int) Position.Y);
-            base.OnCreateControl();
+            g.DrawString("Test", SystemFonts.StatusFont, Brushes.Red, Position);
         }
-
+        
+        public string Name { get; set; }
+       
         /// <summary>
         /// Unique Id for the reference 
         /// </summary>
@@ -86,6 +84,12 @@ namespace TacticsLibrary.DrawObjects
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
+        /// ReferencePoint <see cref="IReferencePoint"/> an update
+        /// </summary>
+        public delegate void ReferencePointEventHandler(IReferencePoint sender);
+        public event ReferencePointEventHandler UpdatePending;
+        
+        /// <summary>
         /// Position relative to the center of the coordinate system 
         /// </summary>
         public PointF RelativePosition => Position.GetRelativePosition(DetectedBy?.ViewPortExtent ?? new SizeF(498, 498));
@@ -104,6 +108,15 @@ namespace TacticsLibrary.DrawObjects
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        /// <summary>
+        /// Update pending handler
+        /// </summary>
+        /// <param name="e"></param>
+        protected virtual void OnUpdatePending(IReferencePoint referencePoint)
+        {
+            UpdatePending?.Invoke(referencePoint);
+        }
+
         protected virtual PolarCoordinate GetCurrentPolarPosition()
         {
             return RelativePosition.GetPolarCoord();
@@ -113,27 +126,6 @@ namespace TacticsLibrary.DrawObjects
         {
             var detectionStartOffset = Position.Offset(new PointF(-1 * DrawContact.POSITION_OFFSET, -1 * DrawContact.POSITION_OFFSET), 0);
             return new RectangleF(detectionStartOffset, new Size(DrawContact.POSITION_OFFSET * 2, DrawContact.POSITION_OFFSET * 2));
-        }
-
-        private void InitializeComponent()
-        {
-            SuspendLayout();
-            // 
-            // ReferencePoint
-            // 
-            MouseClick += new MouseEventHandler(ReferencePoint_MouseClick);
-            ResumeLayout(false);
-
-        }
-
-        /// <summary>
-        /// This click alternates the setting of Selected 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ReferencePoint_MouseClick(object sender, MouseEventArgs e)
-        {
-            Selected = !Selected;
         }
     }
 }

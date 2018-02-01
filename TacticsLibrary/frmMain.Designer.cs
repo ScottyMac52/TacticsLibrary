@@ -242,6 +242,9 @@
             this.Name = "frmMain";
             this.Text = "Main Plot";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
+            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseClick);
+            this.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseDoubleClick);
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseMove);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);

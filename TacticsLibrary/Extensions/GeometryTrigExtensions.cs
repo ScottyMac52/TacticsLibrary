@@ -63,5 +63,10 @@ namespace TacticsLibrary.Extensions
             return CoordinateConverter.CalculatePointFromDegrees(offset, polarCoord, roundingDigits);
         }
 
+        public static Point ToPoint(this PointF thisPointF)
+        {
+            return new Point((int)thisPointF.X, (int)thisPointF.Y);
+        }
+
     }
 }

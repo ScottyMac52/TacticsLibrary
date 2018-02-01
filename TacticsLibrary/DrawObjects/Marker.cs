@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
+using TacticsLibrary.Adapters;
 using TacticsLibrary.DrawObjects;
 
 namespace TacticsLibrary.Interfaces
@@ -12,5 +15,16 @@ namespace TacticsLibrary.Interfaces
         /// Action that is used to Paint the object
         /// </summary>
         public Action<IGraphics, IReferencePoint> PaintMethod { get; internal set; }
+
+        public Marker(ISensor detectedBy, PointF position) 
+            : base(position, new SizeF())
+        {
+
+        }
+
+        public override void Draw(IGraphics g)
+        {
+            PaintMethod?.Invoke(g, this);
+        }
     }
 }

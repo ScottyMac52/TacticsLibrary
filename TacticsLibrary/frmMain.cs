@@ -18,9 +18,6 @@ namespace TacticsLibrary
     {
         public const int MAX_DIFF = 500;
 
-        int angle = 0;
-        int StartAngle = 0;
-
         protected static ILog Logger => LogManager.GetLogger("frmMain");
         protected ISensor RadarReceiver { get; private set; }
         protected Random RandomNumberGen { get; private set; }
@@ -52,7 +49,10 @@ namespace TacticsLibrary
 
         private void Contact_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Logger.Info($"{((IContact)sender).UniqueId} : {e.PropertyName} has changed.");
+            if (Logger?.IsDebugEnabled ?? false)
+            {
+                Logger.Debug($"{((IContact)sender).UniqueId} : {e.PropertyName} has changed.");
+            }
             plotPanel.Invalidate();
         }
 
@@ -96,30 +96,34 @@ namespace TacticsLibrary
         {
             var g = new GraphicsAdapter(e.Graphics);
             RadarReceiver.Draw(g);
-
-            //g.DrawLine(Pens.YellowGreen, RadarReceiver.BullsEye, CursorPosition);
-            System.Diagnostics.Debug.Print($"Cursor = {CursorPosition}");
-            System.Diagnostics.Debug.Print($"Relative Cursor = {CursorPosition.GetRelativePosition(RadarReceiver.ViewPortExtent)}");
         }
 
         private RadarPicture InitializeRadar()
         {
-            var bullsEye = new Marker()
+            var bullsEye = new Marker(RadarReceiver, new PointF(123, 90))
             {
-                Position = new PointF(123, 90),
                 Name = "Bullseye",
                 Speed = 0.00,
                 Altitude = 0.00,
-                Heading = 0.00
+                Heading = 0.00,
+                PaintMethod = (graphics, refPoint) =>
+                {
+                    graphics.FillCircle(Brushes.Blue, refPoint.Position.X, refPoint.Position.Y, 10);
+                    graphics.FillCircle(Brushes.Red, refPoint.Position.X, refPoint.Position.Y, 5);
+                }
             };
 
-            var homePlate = new Marker()
+            var homePlate = new Marker(RadarReceiver, new PointF(100, 200))
             {
-                Position = new PointF(100, 200),
                 Name = "Homeplate",
                 Speed = 0.00,
                 Altitude = 0.00,
-                Heading = 0.00
+                Heading = 0.00,
+                PaintMethod = (graphics, refPoint) =>
+                {
+                    graphics.FillCircle(Brushes.White, refPoint.Position.X, refPoint.Position.Y, 10);
+                    graphics.FillCircle(Brushes.Blue, refPoint.Position.X, refPoint.Position.Y, 5);
+                }
             };
 
             var radarSize = new Size(plotPanel.ClientSize.Width, plotPanel.ClientSize.Height);
@@ -135,23 +139,9 @@ namespace TacticsLibrary
             return rwrReceiver;
         }
 
-        private void RwrReceiver_UpdatePending(object sender, EventArgs e)
+        private void RwrReceiver_UpdatePending(IReferencePoint referencePoint)
         {
             plotPanel.Invalidate();
-        }
-
-        private void DrawScan()
-        {
-            new Thread(() =>
-            {
-                for (int i = 1; i <= 360; i++)
-                {
-                    StartAngle = 0;
-                    angle++;
-                    plotPanel.Invalidate();
-                }
-
-            }).Start();
         }
 
         private void plotPanel_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -180,7 +170,7 @@ namespace TacticsLibrary
         /// <returns></returns>
         protected IContact CreateContactAtPoint(PointF position, ContactTypes contactType, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
         {
-            var newContact = new Contact(RadarReceiver)
+            var newContact = new Contact(RadarReceiver, position)
             {
                 ContactType = contactType,
                 Position = position,
@@ -218,7 +208,16 @@ namespace TacticsLibrary
 
         private void plotPanel_MouseClick(object sender, MouseEventArgs e)
         {
-
+            if (e.Button == MouseButtons.Left)
+            {
+                var absolutePosition = new Point(e.X, e.Y);
+                RadarReceiver
+                    .FindContact(absolutePosition, new Size(5, 5), CoordinateConverter.ROUND_DIGITS)
+                    .ForEach(contact =>
+                    {
+                        contact.Selected = !contact.Selected;
+                    });
+            }
         }
 
         private void plotPanel_MouseMove(object sender, MouseEventArgs e)

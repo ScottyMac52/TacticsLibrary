@@ -31,27 +31,16 @@ namespace TacticsLibrary.Interfaces
         /// </summary>
         /// <see cref="IDrawContact"/>
         public IDrawContact ContactDrawer { get; protected set; }
-        /// <summary>
-        /// Contact requires an update
-        /// </summary>
-        public event EventHandler UpdatePending;
 
         public ILog Logger { get; protected set; }
 
         public bool Running { get; set; }
-        /// <summary>
-        /// Update pending handler
-        /// </summary>
-        /// <param name="e"></param>
-        protected virtual void OnUpdatePending(EventArgs e)
-        {
-            UpdatePending?.Invoke(this, e);
-        }
+        
 
         /// <summary>
         /// Creates a plotted point
         /// </summary>
-        public Contact(ISensor detectedBy)
+        public Contact(ISensor detectedBy, PointF position) : base(position, new SizeF())
         {
             DetectedBy = detectedBy;
             LastUpdate = TimeStamp;
@@ -87,7 +76,7 @@ namespace TacticsLibrary.Interfaces
                         var newPos = CoordinateConverter.CalculatePointFromDegrees(RelativePosition, new PolarCoordinate(Heading, distance), CoordinateConverter.ROUND_DIGITS);
                         Position = newPos.GetAbsolutePosition(DetectedBy.ViewPortExtent);
                         // Notify the change in Position
-                        OnUpdatePending(new EventArgs());
+                        OnUpdatePending(this);
 
                         if (_lockTaken)
                         {
@@ -104,8 +93,8 @@ namespace TacticsLibrary.Interfaces
             }
         }
 
-        public Contact(ISensor detectedBy, ILog logger) 
-            : this(detectedBy)
+        public Contact(ISensor detectedBy, ILog logger, PointF position) 
+            : this(detectedBy, position)
         {
             Logger = logger;
         }
@@ -124,7 +113,7 @@ namespace TacticsLibrary.Interfaces
 
         #endregion IEquatable<Concat> Implementation
 
-        public void Draw(IGraphics g)
+        public override void Draw(IGraphics g)
         {
             ContactDrawer = new DrawContact(Logger, this, 10.0, DetectedBy.ViewPortExtent);
             ContactDrawer.Draw(g);
