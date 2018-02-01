@@ -12,6 +12,7 @@ namespace TacticsLibrary.DrawObjects
     /// </summary>
     public class ReferencePoint : IReferencePoint, INotifyPropertyChanged
     {
+        private PointF _absolutePosition;
         private double _speed;
         private double _heading;
         private double _altitude;
@@ -37,11 +38,7 @@ namespace TacticsLibrary.DrawObjects
         /// </summary>
         public Guid UniqueId { get; protected set; }
 
-        /// <summary>
-        /// Position absolute to (0,0) in coordinate system
-        /// </summary>
-        public PointF Position { get; internal set; }
-          /// <summary>
+         /// <summary>
         /// Timestamp the reference was added
         /// </summary>
         public DateTime TimeStamp { get; protected set; }
@@ -57,6 +54,8 @@ namespace TacticsLibrary.DrawObjects
         public ISensor DetectedBy { get; protected set; }
 
         #region Properties that can be externally changed
+
+        public PointF Position { get { return _absolutePosition; } protected set { _absolutePosition = value; OnPropertyChanged(nameof(Position)); } }
 
         /// <summary>
         /// Current velocity expressed as units per hour

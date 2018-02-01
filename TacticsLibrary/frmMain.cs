@@ -43,12 +43,26 @@ namespace TacticsLibrary
                 ContactTypes.AirUnknown,
                 new PolarCoordinate(180.00, 100.00),
                 360.00,
-                980.00,
+                130000.00,
                 52000);
         }
 
         private void Contact_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            var refPoint = sender as IContact;
+            
+            // If the contact is off the sensor then we 
+            if(refPoint.RelativePosition.GetPolarCoord().Radius > RadarReceiver.Radius)
+            {
+                // remove it from the contact collection 
+                RadarReceiver.CurrentContacts.Remove(refPoint.UniqueId);
+                // tell it's thread to stop
+                refPoint.Running = false;
+                // log it
+                Logger.Info($"Contact {refPoint} removed as it's off the sensor range.");
+                RefreshContactList();
+            }
+            
             if (Logger?.IsDebugEnabled ?? false)
             {
                 Logger.Debug($"{((IContact)sender).UniqueId} : {e.PropertyName} has changed.");
@@ -173,7 +187,6 @@ namespace TacticsLibrary
             var newContact = new Contact(RadarReceiver, position)
             {
                 ContactType = contactType,
-                Position = position,
                 Speed = speed,
                 Heading = heading,
                 Altitude = altitude,
@@ -234,7 +247,10 @@ namespace TacticsLibrary
 
         private void RefreshContactList()
         {
-            var dataBindList = RadarReceiver.CurrentContacts.Values.ToList();
+            var dataBindList = RadarReceiver
+                .CurrentContacts
+                .Values
+                .Where(contact => contact.Running);
             gridViewContacts.DataSource = dataBindList;
             gridViewContacts.Refresh();
         }
