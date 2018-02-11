@@ -12,14 +12,10 @@ namespace TacticsLibrary.Interfaces
         void Draw(IGraphics g);
         void DrawVelocityVector();
         void DrawText();
-        void DrawHostileAir(PointF topLeft);
-        void DrawHostileSub(PointF topLeft);
-        void DrawHostileSurface(PointF topLeft);
         void DrawArc(RectangleF contactArea, Pen color);
         void DrawUpsidedownArc(RectangleF contactArea, Pen color);
         void DrawCircle(RectangleF contactArea, Pen color);
         void DrawCarat(PointF topLeft, Pen color);
         void DrawUpsidedownCarat(PointF topLeft, Pen color);
-
     }
 }

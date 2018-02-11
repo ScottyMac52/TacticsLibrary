@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
-using System.Windows.Forms;
-using TacticsLibrary.Adapters;
 using TacticsLibrary.Extensions;
 using static TacticsLibrary.DrawObjects.ReferencePoint;
 
@@ -31,11 +29,14 @@ namespace TacticsLibrary.Interfaces
         public Marker BullsEye { get; private set; }
         public Marker HomePlate { get; private set; }
         public PointF OwnShip => new PointF(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
-        public event ReferencePointEventHandler UpdatePending;
 
-        protected virtual void OnUpdatePending(IReferencePoint referencePoint)
+        public Action<IGraphics, IReferencePoint> PaintMethod { get; protected set; }
+
+        public event UpdateRegionEventHandler UpdatePending;
+
+        protected virtual void OnUpdatePending(Region updateRegion)
         {
-            UpdatePending?.Invoke(referencePoint);
+            UpdatePending?.Invoke(updateRegion);
         }
 
         public RadarPicture(Marker bullsEye, Marker homePlate, SizeF viewPortExtent, ILog logger = null)
@@ -45,7 +46,7 @@ namespace TacticsLibrary.Interfaces
             ViewPortExtent = viewPortExtent;
             CurrentContacts = new SortedList<Guid, IContact>();
             Logger = logger == null ? LogManager.GetLogger(typeof(RadarPicture)) : logger;
-            Logger.Info($"Created radar {ViewPortExtent} BullsEye: {BullsEye} HomePlate: {HomePlate}");
+            Logger.Info($"Created radar {ViewPortExtent} {BullsEye} {HomePlate}");
         }
 
         public void Draw(IGraphics g)
@@ -139,7 +140,7 @@ namespace TacticsLibrary.Interfaces
             if (!CurrentContacts.ContainsKey(newContact.UniqueId))
             {
                 CurrentContacts.Add(newContact.UniqueId, newContact);
-                newContact.UpdatePending += Contact_UpdatePending;
+                // newContact.UpdateRegion += Contact_UpdatePending;
                 Logger.Debug($"Added contact: {newContact}");
             }
             else
@@ -156,7 +157,7 @@ namespace TacticsLibrary.Interfaces
         private void Contact_UpdatePending(IReferencePoint referencePoint)
         {
             Logger.Debug($"Updating contact: {referencePoint}");
-            OnUpdatePending(referencePoint);
+            // OnUpdatePending(referencePoint);
         }
     }
 }

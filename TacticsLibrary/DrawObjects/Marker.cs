@@ -11,20 +11,10 @@ namespace TacticsLibrary.Interfaces
     /// </summary>
     public class Marker : ReferencePoint, IMarker
     {
-        /// <summary>
-        /// Action that is used to Paint the object
-        /// </summary>
-        public Action<IGraphics, IReferencePoint> PaintMethod { get; internal set; }
-
         public Marker(ISensor detectedBy, PointF position) 
-            : base(position, new SizeF())
+            : base(detectedBy, position)
         {
 
-        }
-
-        public override void Draw(IGraphics g)
-        {
-            PaintMethod?.Invoke(g, this);
         }
     }
 }

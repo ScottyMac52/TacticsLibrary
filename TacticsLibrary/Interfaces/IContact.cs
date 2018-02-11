@@ -20,19 +20,16 @@ namespace TacticsLibrary.Interfaces
         PolarCoordinate PolarPosit { get; }
         RectangleF DetectionWindow { get; }
         string ToString();
-
         double Speed { get; set; }
         double Altitude { get; set; }
         double Heading { get; set; }
         bool Selected { get; set; }
         bool ShowText { get; set; }
         ISensor DetectedBy { get; }
-        event PropertyChangedEventHandler PropertyChanged;
-
         Thread ProcessThread { get; }
         bool Running { get; set; }
         int? CustomUpdateDuration { get; set; }
-        event ReferencePointEventHandler UpdatePending;
+        event UpdateRegionEventHandler UpdateRegion;
 
     }
 }

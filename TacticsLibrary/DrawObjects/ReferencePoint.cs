@@ -1,7 +1,8 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Windows.Forms;
+using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 
@@ -10,42 +11,41 @@ namespace TacticsLibrary.DrawObjects
     /// <summary>
     /// Base class for anything displayed in an <see cref="ISensor"/>
     /// </summary>
-    public class ReferencePoint : IReferencePoint, INotifyPropertyChanged
+    public abstract class ReferencePoint : IReferencePoint, INotifyPropertyChanged
     {
-        private PointF _absolutePosition;
+        #region Private fields
+
         private double _speed;
         private double _heading;
         private double _altitude;
         private bool _selected;
         private bool _showText;
 
-        public ReferencePoint(PointF position, SizeF size)
+        #endregion
+
+        #region Ctor
+        internal ReferencePoint(ISensor detectedBy, PointF position, ILog logger)
         {
+            DetectedBy = detectedBy;
             UniqueId = Guid.NewGuid();
             TimeStamp = DateTime.UtcNow;
             Position = position;
+            Logger = Logger;
         }
-
-        public virtual void Draw(IGraphics g)
-        {
-            g.DrawString("Test", SystemFonts.StatusFont, Brushes.Red, Position);
-        }
+        #endregion
         
+        #region Public Properties
+
         public string Name { get; set; }
-       
+
+        #endregion
+
+        #region Protected Properties
+
         /// <summary>
         /// Unique Id for the reference 
         /// </summary>
         public Guid UniqueId { get; protected set; }
-
-         /// <summary>
-        /// Timestamp the reference was added
-        /// </summary>
-        public DateTime TimeStamp { get; protected set; }
-        /// <summary>
-        /// Last DateTime in UTC that the contact was updated
-        /// </summary>
-        public DateTime LastUpdate { get; internal set; }
 
         /// <summary>
         /// Which sensor is tracking this target
@@ -53,9 +53,11 @@ namespace TacticsLibrary.DrawObjects
         /// <see cref="ISensor"/>
         public ISensor DetectedBy { get; protected set; }
 
-        #region Properties that can be externally changed
+        public ILog Logger { get; protected set; }
 
-        public PointF Position { get { return _absolutePosition; } protected set { _absolutePosition = value; OnPropertyChanged(nameof(Position)); } }
+        #endregion
+
+        #region Properties that can be externally changed and notifcation is provided
 
         /// <summary>
         /// Current velocity expressed as units per hour
@@ -78,20 +80,26 @@ namespace TacticsLibrary.DrawObjects
         /// </summary>
         public bool ShowText { get { return _showText; } set { _showText = value; OnPropertyChanged(nameof(ShowText)); } }
 
-        #endregion Properties that can be externally changed
+        #endregion  Properties that can be externally changed and notifcation is provided
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        #region Properties that are calculated 
 
         /// <summary>
-        /// ReferencePoint <see cref="IReferencePoint"/> an update
+        /// Timestamp the reference was added
         /// </summary>
-        public delegate void ReferencePointEventHandler(IReferencePoint sender);
-        public event ReferencePointEventHandler UpdatePending;
-        
+        public DateTime TimeStamp { get; protected set; }
+        /// <summary>
+        /// Last DateTime in UTC that the contact was updated
+        /// </summary>
+        public DateTime LastUpdate { get; protected set; }
+        /// <summary>
+        /// Position absolute to (0,0) in coordinate system
+        /// </summary>
+        public PointF Position { get; protected set; }
         /// <summary>
         /// Position relative to the center of the coordinate system 
         /// </summary>
-        public PointF RelativePosition => Position.GetRelativePosition(DetectedBy?.ViewPortExtent ?? new SizeF(498, 498));
+        public PointF RelativePosition => GetCurrentRelativePosition();
         /// <summary>
         /// The current polar position of the contact
         /// </summary>
@@ -102,29 +110,96 @@ namespace TacticsLibrary.DrawObjects
         /// <see cref="Rectangle"/>
         public RectangleF DetectionWindow => GetDetectionWindow();
 
+
+        #endregion Properties that are calculated 
+
+        #region Events and Handlers
+
+        public virtual event PropertyChangedEventHandler PropertyChanged;
+
         private void OnPropertyChanged(string propertyName)
         {
+            var eventType = UpdateEventTypes.Unknown;
+
+            switch(propertyName)
+            {
+                case nameof(Speed):
+                    eventType = UpdateEventTypes.SpeedChange;
+                    break;
+                case nameof(Altitude):
+                    eventType = UpdateEventTypes.AltitudeChange;
+                    break;
+                case nameof(Heading):
+                    eventType = UpdateEventTypes.HeadingChange;
+                    break;
+                case nameof(ShowText):
+                    eventType = UpdateEventTypes.ShowTextChange;
+                    break;
+                case nameof(Selected):
+                    eventType = UpdateEventTypes.SelectedChange;
+                    break;
+            }
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        #endregion Events and Handlers
+
+        #region Public methods and delegates
+        
         /// <summary>
-        /// Update pending handler
+        /// <see cref="Action"/> that is used to draw this reference point
         /// </summary>
-        /// <param name="e"></param>
-        protected virtual void OnUpdatePending(IReferencePoint referencePoint)
+        public virtual Action<IGraphics, IReferencePoint> PaintMethod { get; set; }
+
+        public virtual void Draw(IGraphics g)
         {
-            UpdatePending?.Invoke(referencePoint);
+            if (PaintMethod == null)
+            {
+                g.DrawString($"{Name}: {Position} {RelativePosition} {PolarPosit}: {Heading} {Speed} {Altitude}", SystemFonts.StatusFont, Brushes.Red, Position);
+            }
+            else
+            {
+                PaintMethod?.Invoke(g, this);
+            }
         }
 
+        public override string ToString()
+        {
+            return $"{Name}: {Position} : {PolarPosit}";
+        }
+
+        #endregion
+
+        #region Protected methods that provide calculated values
+
+        /// <summary>
+        /// Uses the associated <see cref="ISensor"/> to get the relative position of the current absolute coordinates in the specified ViewPort
+        /// </summary>
+        /// <returns><see cref="PointF"/></returns>
+        protected virtual PointF GetCurrentRelativePosition()
+        {
+            return Position.GetRelativePosition(DetectedBy?.ViewPortExtent ?? new SizeF(498, 498));
+        }
+
+        /// <summary>
+        /// Uses the current Relative position to calculate the Polar coordinates
+        /// </summary>
+        /// <returns><see cref="PolarCoordinate"/></returns>
         protected virtual PolarCoordinate GetCurrentPolarPosition()
         {
             return RelativePosition.GetPolarCoord();
         }
 
+        /// <summary>
+        /// Calculates the <see cref="RectangleF"/> 
+        /// </summary>
+        /// <returns></returns>
         protected virtual RectangleF GetDetectionWindow()
         {
             var detectionStartOffset = Position.Offset(new PointF(-1 * DrawContact.POSITION_OFFSET, -1 * DrawContact.POSITION_OFFSET), 0);
             return new RectangleF(detectionStartOffset, new Size(DrawContact.POSITION_OFFSET * 2, DrawContact.POSITION_OFFSET * 2));
         }
+
+        #endregion
     }
 }

@@ -62,40 +62,41 @@ namespace TacticsLibrary.DrawObjects
 
             switch (Contact.ContactType)
             {
-                case Enums.ContactTypes.AirUnknown:
+                case ContactTypes.AirUnknown:
                     DrawArc(DrawArea, Pens.Yellow);
                     break;
-                case Enums.ContactTypes.AirFriendly:
+                case ContactTypes.AirFriendly:
                     DrawArc(DrawArea, Pens.Green);
                     break;
-                case Enums.ContactTypes.AirEnemy:
-                    DrawHostileAir(DrawArea.Location);
+                case ContactTypes.AirEnemy:
+                    DrawCarat(DrawArea.Location, Pens.Red);
                     break;
-                case Enums.ContactTypes.SurfaceUnknown:
+                case ContactTypes.SurfaceUnknown:
                     DrawCircle(DrawArea, Pens.Yellow);
                     break;
-                case Enums.ContactTypes.SurfaceFriendly:
+                case ContactTypes.SurfaceFriendly:
                     DrawCircle(DrawArea, Pens.Green);
                     break;
-                case Enums.ContactTypes.SurfaceEnemy:
-                    DrawHostileSurface(DrawArea.Location);
+                case ContactTypes.SurfaceEnemy:
+                    DrawCarat(DrawArea.Location, Pens.Red);
+                    DrawUpsidedownCarat(DrawArea.Location, Pens.Red);
                     break;
-                case Enums.ContactTypes.SubUnknown:
+                case ContactTypes.SubUnknown:
                     DrawUpsidedownArc(DrawArea, Pens.Yellow);
                     break;
-                case Enums.ContactTypes.SubFriendly:
+                case ContactTypes.SubFriendly:
                     DrawUpsidedownArc(DrawArea, Pens.Green);
                     break;
-                case Enums.ContactTypes.SubEnemy:
-                    DrawHostileSub(DrawArea.Location);
+                case ContactTypes.SubEnemy:
+                    DrawUpsidedownCarat(DrawArea.Location, Pens.Red);
                     break;
-                case Enums.ContactTypes.MissileSRM:
+                case ContactTypes.MissileSRM:
                     GraphicsContext.FillRectangle(Brushes.Red, Contact.Position.X, Contact.Position.Y, 2, 2);
                     break;
-                case Enums.ContactTypes.MissileMRM:
+                case ContactTypes.MissileMRM:
                     GraphicsContext.FillRectangle(Brushes.Red, Contact.Position.X, Contact.Position.Y, 3, 3);
                     break;
-                case Enums.ContactTypes.MissileCruise:
+                case ContactTypes.MissileCruise:
                     GraphicsContext.FillRectangle(Brushes.Red, Contact.Position.X, Contact.Position.Y, 4, 4);
                     break;
             }
@@ -119,7 +120,7 @@ namespace TacticsLibrary.DrawObjects
         {
             PointF drawText = DrawArea.Location;
             drawText.Offset(new PointF(20.0F, -20.0F), 4);
-            ReferenceText = $"{Contact.PolarPosit} - {Contact.Heading}° ";
+            ReferenceText = Contact.ToString();
             GraphicsContext.DrawString(ReferenceText, SystemFonts.StatusFont, Brushes.White, drawText);
         }
 
@@ -130,34 +131,6 @@ namespace TacticsLibrary.DrawObjects
         public void DrawDetectionWindow(Pen color)
         {
             GraphicsContext.DrawRectangle(color, Contact.DetectionWindow);
-        }
-
-        /// <summary>
-        /// Draws a ^ at the position using the Top Left corner of the rectangle as reference
-        /// </summary>
-        /// <param name="topLeft"><see cref="Point"/></param>
-        public void DrawHostileAir(PointF topLeft)
-        {
-            DrawCarat(topLeft, Pens.Red);
-        }
-
-        /// <summary>
-        /// Draws a hostile subsurface contact
-        /// </summary>
-        /// <param name="topLeft"><see cref="Point"/></param>
-        public void DrawHostileSub(PointF topLeft)
-        {
-            DrawUpsidedownCarat(topLeft, Pens.Red);
-        }
-
-        /// <summary>
-        /// Draws a hostile surface contact
-        /// </summary>
-        /// <param name="topLeft"><see cref="Point"/></param>
-        public void DrawHostileSurface(PointF topLeft)
-        {
-            DrawCarat(topLeft, Pens.Red);
-            DrawUpsidedownCarat(topLeft, Pens.Red);
         }
 
         /// <summary>

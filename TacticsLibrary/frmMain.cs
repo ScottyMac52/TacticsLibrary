@@ -77,9 +77,9 @@ namespace TacticsLibrary
         /// <param name="rMax"></param>
         /// <param name="nPlots"></param>
         /// <returns></returns>
-        private List<IContact> GenerateRandomPlots(PointF relativePosition, double rMax, int nPlots)
+        private List<IReferencePoint> GenerateRandomPlots(PointF relativePosition, double rMax, int nPlots)
         {
-            var randPlots = new List<IContact>();
+            var randPlots = new List<IReferencePoint>();
 
             for (int i = 0; i < nPlots; i++)
             {
@@ -92,11 +92,10 @@ namespace TacticsLibrary
                 var polarPosition = new PolarCoordinate(randomBearing, randomRange);
                 var newContact = CreateContactAtPolarCoordinate(relativePosition, contactType, polarPosition, heading, speed, altitude);
                 Logger.Info($"Adding contact: {newContact} as a random contact.");
-                newContact.PropertyChanged += Contact_PropertyChanged;
+                // newContact.PropertyChanged += Contact_PropertyChanged;
                 randPlots.Add(newContact);
-                RadarReceiver.AddContact(newContact);
+                RadarReceiver.AddContact((IContact) newContact);
             }
-
             return randPlots;
         }
 
@@ -149,7 +148,7 @@ namespace TacticsLibrary
                 RingSep = 50
             };
 
-            rwrReceiver.UpdatePending += RwrReceiver_UpdatePending;
+            //rwrReceiver.UpdatePending += RwrReceiver_UpdatePending;
             return rwrReceiver;
         }
 
@@ -182,22 +181,26 @@ namespace TacticsLibrary
         /// <param name="speed"></param>
         /// <param name="altitude"></param>
         /// <returns></returns>
-        protected IContact CreateContactAtPoint(PointF position, ContactTypes contactType, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
+        protected IReferencePoint CreateContactAtPoint(PointF position, ContactTypes contactType, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
         {
-            var newContact = new Contact(RadarReceiver, position)
-            {
-                ContactType = contactType,
-                Speed = speed,
-                Heading = heading,
-                Altitude = altitude,
-            };
+            var referenceContactFactory = new ReferencePointFactory<Contact>();
+
+            var newContact = referenceContactFactory.CreateContact(RadarReceiver, position, heading, altitude, speed, contactType);
+
             Logger.Info($"Adding contact: {contactType} as a plotted contact at {position}");
             newContact.PropertyChanged += Contact_PropertyChanged;
-            RadarReceiver.AddContact(newContact);
+            newContact.UpdateRegion += NewContact_UpdateRegion;
+
+            RadarReceiver.AddContact((IContact) newContact);
             RefreshContactList();
             plotPanel.Invalidate();
             Logger.Info($"New contact added: {newContact}");
             return newContact;
+        }
+
+        private void NewContact_UpdateRegion(Region updateRegion)
+        {
+            plotPanel.Invalidate(updateRegion);
         }
 
 
@@ -211,7 +214,7 @@ namespace TacticsLibrary
         /// <param name="speed"></param>
         /// <param name="altitude"></param>
         /// <returns></returns>
-        public IContact CreateContactAtPolarCoordinate(PointF startAbsolutePosition, ContactTypes contactType, PolarCoordinate polarCoord, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
+        public IReferencePoint CreateContactAtPolarCoordinate(PointF startAbsolutePosition, ContactTypes contactType, PolarCoordinate polarCoord, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
         {
             var relativePosition = startAbsolutePosition.GetRelativePosition(RadarReceiver.ViewPortExtent);
             var newRelativePosition = CoordinateConverter.CalculatePointFromDegrees(relativePosition, polarCoord, CoordinateConverter.ROUND_DIGITS);

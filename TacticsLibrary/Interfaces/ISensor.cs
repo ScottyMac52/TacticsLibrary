@@ -20,5 +20,6 @@ namespace TacticsLibrary.Interfaces
         void AddReference(PointF refLocation, string refName, Image refImage);
         void Draw(IGraphics g);
         List<IContact> FindContact(PointF checkPoint, SizeF detectionWindow, int roundingDigits);
+        Action<IGraphics, IReferencePoint> PaintMethod { get; }
     }
 }

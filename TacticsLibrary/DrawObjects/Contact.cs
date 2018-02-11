@@ -16,8 +16,8 @@ namespace TacticsLibrary.Interfaces
     /// </summary>
     public class Contact : ReferencePoint, IVisibleObjects, IEquatable<Contact>, IContact
     {
-        private const double SECONDS_PER_HOUR = 3600.00;
-        private const int DEFAULT_UPDATE_MILISECONDS = 200;
+        public const double SECONDS_PER_HOUR = 3600.00;
+        public const int DEFAULT_UPDATE_MILISECONDS = 200;
         
         public Thread ProcessThread { get; protected set; }
         public int? CustomUpdateDuration { get; set; }
@@ -32,20 +32,18 @@ namespace TacticsLibrary.Interfaces
         /// <see cref="IDrawContact"/>
         public IDrawContact ContactDrawer { get; protected set; }
 
-        public ILog Logger { get; protected set; }
-
         public bool Running { get; set; }
-        
+
+        public Action ProcessLoop { get; set; }
 
         /// <summary>
         /// Creates a plotted point
         /// </summary>
-        public Contact(ISensor detectedBy, PointF position) : base(position, new SizeF())
+        internal Contact(ISensor detectedBy, PointF position) : base(detectedBy, position)
         {
             DetectedBy = detectedBy;
             LastUpdate = TimeStamp;
-
-            ProcessThread = new Thread(new ThreadStart(Processing));
+            ProcessThread = new Thread(new ThreadStart(ProcessLoop ?? DefaultProcessing));
             Running = true;
             ProcessThread.Start();
 
@@ -55,7 +53,12 @@ namespace TacticsLibrary.Interfaces
             }
         }
 
-        private void Processing()
+        internal Contact(ISensor detectedBy, PointF position) : this(detectedBy, position)
+        {
+            Logger = logger;
+        }
+        
+        private void DefaultProcessing()
         {
             while (Running)
             {
@@ -74,9 +77,16 @@ namespace TacticsLibrary.Interfaces
                         var distance = timeSinceLastUpdate.TotalSeconds * (Speed / SECONDS_PER_HOUR);
                         // Get the new position based on course and distance traveled
                         var newPos = CoordinateConverter.CalculatePointFromDegrees(RelativePosition, new PolarCoordinate(Heading, distance), CoordinateConverter.ROUND_DIGITS);
-                        Position = newPos.GetAbsolutePosition(DetectedBy.ViewPortExtent);
-                        // Notify the change in Position
-                        OnUpdatePending(this);
+                        var newAbsPos = newPos.GetAbsolutePosition(DetectedBy.ViewPortExtent);
+                        // Create Region and add the previous window to it
+                        var newRegion = new Region(DetectionWindow);
+                        // Set the new Position
+                        Position = newAbsPos;
+                        // Add the new position to the Region
+                        newRegion.Union(DetectionWindow);
+                        // Invalidate the Region to cause that are to be repainted
+
+                        // TODO: Need to notify the ISensor to repaint
 
                         if (_lockTaken)
                         {
@@ -92,13 +102,7 @@ namespace TacticsLibrary.Interfaces
                 }
             }
         }
-
-        public Contact(ISensor detectedBy, ILog logger, PointF position) 
-            : this(detectedBy, position)
-        {
-            Logger = logger;
-        }
-
+                  
         #region IEquatable<Contact> Implementation
 
         /// <summary>
@@ -121,7 +125,7 @@ namespace TacticsLibrary.Interfaces
 
         public override string ToString()
         {
-            return $"{ContactType}: {PolarPosit.Degrees}° {PolarPosit.Radius} miles {Heading}° {Speed} knts {Altitude} ft";
+            return $"{ContactType}: {PolarPosit} {Heading}° {Speed} knts {Altitude} ft";
         }
 
     }

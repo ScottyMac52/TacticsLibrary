@@ -50,7 +50,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapters\GraphicsAdapter.cs" />
-    <Compile Include="EventHandlers\ReferencePointEventArgs.cs" />
+    <Compile Include="Enums\UpdateEventTypes.cs" />
+    <Compile Include="EventHandlers\UpdateEventArgs.cs" />
     <Compile Include="Interfaces\IMarker.cs" />
     <Compile Include="DrawObjects\Marker.cs" />
     <Compile Include="Interfaces\IContact.cs" />
@@ -73,7 +74,7 @@
     <Compile Include="frmMain.Designer.cs">
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="ObjectFactory.cs" />
+    <Compile Include="ReferencePointFactory.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TrackingObjects\DrawContact.cs" />
