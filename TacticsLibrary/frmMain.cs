@@ -188,19 +188,18 @@ namespace TacticsLibrary
             var newContact = referenceContactFactory.CreateContact(RadarReceiver, position, heading, altitude, speed, contactType);
 
             Logger.Info($"Adding contact: {contactType} as a plotted contact at {position}");
-            newContact.PropertyChanged += Contact_PropertyChanged;
-            newContact.UpdateRegion += NewContact_UpdateRegion;
-
             RadarReceiver.AddContact((IContact) newContact);
             RefreshContactList();
+            newContact.PropertyChanged += Contact_PropertyChanged;
+            newContact.ReferencePointChanged += Contact_PositionChanged;
             plotPanel.Invalidate();
             Logger.Info($"New contact added: {newContact}");
             return newContact;
         }
 
-        private void NewContact_UpdateRegion(Region updateRegion)
+        private void Contact_PositionChanged(IReferencePoint e)
         {
-            plotPanel.Invalidate(updateRegion);
+            plotPanel.Invalidate();
         }
 
 

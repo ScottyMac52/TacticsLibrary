@@ -39,25 +39,21 @@ namespace TacticsLibrary.Interfaces
         /// <summary>
         /// Creates a plotted point
         /// </summary>
-        internal Contact(ISensor detectedBy, PointF position) : base(detectedBy, position)
+        internal Contact(ISensor detectedBy, PointF position, ILog logger) : base(detectedBy, position, logger)
         {
             DetectedBy = detectedBy;
             LastUpdate = TimeStamp;
             ProcessThread = new Thread(new ThreadStart(ProcessLoop ?? DefaultProcessing));
             Running = true;
+            Logger?.Info($"{this} firing ReferencePointChanged");
             ProcessThread.Start();
-
-            if(Logger == null)
-            {
-                Logger = LogManager.GetLogger(typeof(Contact));
-            }
         }
 
-        internal Contact(ISensor detectedBy, PointF position) : this(detectedBy, position)
+        internal Contact(ISensor detectedBy, PointF position) : this(detectedBy, position, null)
         {
-            Logger = logger;
+            Logger = LogManager.GetLogger(typeof(Contact));
         }
-        
+
         private void DefaultProcessing()
         {
             while (Running)

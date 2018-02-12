@@ -24,7 +24,7 @@ namespace TacticsLibrary.DrawObjects
         #endregion
 
         #region Ctor
-        internal ReferencePoint(ISensor detectedBy, PointF position, ILog logger)
+        internal ReferencePoint(ISensor detectedBy, PointF position, ILog logger = null)
         {
             DetectedBy = detectedBy;
             UniqueId = Guid.NewGuid();
@@ -116,7 +116,8 @@ namespace TacticsLibrary.DrawObjects
         #region Events and Handlers
 
         public virtual event PropertyChangedEventHandler PropertyChanged;
-
+        public event ReferencePointChanged.ReferencePointChangedEventHandler ReferencePointChanged;
+        
         private void OnPropertyChanged(string propertyName)
         {
             var eventType = UpdateEventTypes.Unknown;
@@ -139,13 +140,14 @@ namespace TacticsLibrary.DrawObjects
                     eventType = UpdateEventTypes.SelectedChange;
                     break;
             }
+            Logger?.Info($"{this} firing {eventType}");
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #endregion Events and Handlers
 
         #region Public methods and delegates
-        
+
         /// <summary>
         /// <see cref="Action"/> that is used to draw this reference point
         /// </summary>
@@ -153,6 +155,7 @@ namespace TacticsLibrary.DrawObjects
 
         public virtual void Draw(IGraphics g)
         {
+            // Draw the Reference Point with a default implementation unless the PaintMethod was specified
             if (PaintMethod == null)
             {
                 g.DrawString($"{Name}: {Position} {RelativePosition} {PolarPosit}: {Heading} {Speed} {Altitude}", SystemFonts.StatusFont, Brushes.Red, Position);

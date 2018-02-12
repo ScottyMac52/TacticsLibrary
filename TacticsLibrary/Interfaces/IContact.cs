@@ -29,7 +29,6 @@ namespace TacticsLibrary.Interfaces
         Thread ProcessThread { get; }
         bool Running { get; set; }
         int? CustomUpdateDuration { get; set; }
-        event UpdateRegionEventHandler UpdateRegion;
 
     }
 }

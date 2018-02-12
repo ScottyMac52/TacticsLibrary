@@ -33,6 +33,7 @@ namespace TacticsLibrary.Interfaces
         #region Methods, Events and Delegates
         void Draw(IGraphics g);
         event PropertyChangedEventHandler PropertyChanged;
+        event ReferencePointChanged.ReferencePointChangedEventHandler ReferencePointChanged;
         Action<IGraphics, IReferencePoint> PaintMethod { get; set; }
 
         #endregion

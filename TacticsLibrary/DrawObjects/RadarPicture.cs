@@ -32,13 +32,6 @@ namespace TacticsLibrary.Interfaces
 
         public Action<IGraphics, IReferencePoint> PaintMethod { get; protected set; }
 
-        public event UpdateRegionEventHandler UpdatePending;
-
-        protected virtual void OnUpdatePending(Region updateRegion)
-        {
-            UpdatePending?.Invoke(updateRegion);
-        }
-
         public RadarPicture(Marker bullsEye, Marker homePlate, SizeF viewPortExtent, ILog logger = null)
         {
             BullsEye = bullsEye;
@@ -148,10 +141,6 @@ namespace TacticsLibrary.Interfaces
                 Logger.Warn($"Already found reference to contact {newContact}");
             }
 
-        }
-
-        public void AddReference(PointF refLocation, string refName, Image refImage)
-        {
         }
 
         private void Contact_UpdatePending(IReferencePoint referencePoint)
