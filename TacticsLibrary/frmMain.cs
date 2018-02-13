@@ -191,8 +191,7 @@ namespace TacticsLibrary
             newContact.ReferencePointChanged += NewContact_ReferencePointChanged;
             RadarReceiver.AddContact((IContact) newContact);
             RefreshContactList();
-            newContact.PropertyChanged += Contact_PropertyChanged;
-            newContact.ReferencePointChanged += Contact_PositionChanged;
+            newContact.ReferencePointChanged += NewContact_ReferencePointChanged;
             plotPanel.Invalidate();
             Logger.Info($"New contact added: {newContact}");
             return newContact;
