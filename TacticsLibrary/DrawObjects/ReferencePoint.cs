@@ -1,8 +1,10 @@
 ﻿using log4net;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using TacticsLibrary.Enums;
+using TacticsLibrary.EventHandlers;
 using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 
@@ -11,7 +13,7 @@ namespace TacticsLibrary.DrawObjects
     /// <summary>
     /// Base class for anything displayed in an <see cref="ISensor"/>
     /// </summary>
-    public abstract class ReferencePoint : IReferencePoint, INotifyPropertyChanged
+    public abstract class ReferencePoint : IReferencePoint
     {
         #region Private fields
 
@@ -115,7 +117,7 @@ namespace TacticsLibrary.DrawObjects
 
         #region Events and Handlers
 
-        public virtual event PropertyChangedEventHandler PropertyChanged;
+        public virtual event ReferencePointChangedEventHandler ReferencePointChanged;
 
         private void OnPropertyChanged(string propertyName)
         {
@@ -139,7 +141,8 @@ namespace TacticsLibrary.DrawObjects
                     eventType = UpdateEventTypes.SelectedChange;
                     break;
             }
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+            ReferencePointChanged?.Invoke(this, new ReferencePointChangedEventArgs(new List<RectangleF>(), eventType, propertyName));
         }
 
         #endregion Events and Handlers
@@ -151,6 +154,10 @@ namespace TacticsLibrary.DrawObjects
         /// </summary>
         public virtual Action<IGraphics, IReferencePoint> PaintMethod { get; set; }
 
+        /// <summary>
+        /// Draws the <see cref="ReferencePoint"/>
+        /// </summary>
+        /// <param name="g"><see cref="IGraphics"/></param>
         public virtual void Draw(IGraphics g)
         {
             if (PaintMethod == null)
@@ -159,10 +166,14 @@ namespace TacticsLibrary.DrawObjects
             }
             else
             {
-                PaintMethod?.Invoke(g, this);
+                PaintMethod.Invoke(g, this);
             }
         }
 
+        /// <summary>
+        /// Human readable label for <see cref="ReferencePoint"/>
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"{Name}: {Position} : {PolarPosit}";

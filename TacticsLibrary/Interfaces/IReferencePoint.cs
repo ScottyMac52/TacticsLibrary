@@ -1,8 +1,7 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Drawing;
 using TacticsLibrary.DrawObjects;
-using static TacticsLibrary.DrawObjects.ReferencePoint;
+using TacticsLibrary.EventHandlers;
 
 namespace TacticsLibrary.Interfaces
 {
@@ -32,7 +31,7 @@ namespace TacticsLibrary.Interfaces
 
         #region Methods, Events and Delegates
         void Draw(IGraphics g);
-        event PropertyChangedEventHandler PropertyChanged;
+        event ReferencePointChangedEventHandler ReferencePointChanged;
         Action<IGraphics, IReferencePoint> PaintMethod { get; set; }
 
         #endregion

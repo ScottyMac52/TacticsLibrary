@@ -51,7 +51,8 @@
   <ItemGroup>
     <Compile Include="Adapters\GraphicsAdapter.cs" />
     <Compile Include="Enums\UpdateEventTypes.cs" />
-    <Compile Include="EventHandlers\UpdateEventArgs.cs" />
+    <Compile Include="EventHandlers\ReferencePointChangedEventArgs.cs" />
+    <Compile Include="EventHandlers\ReferencePointChangedEventHandler.cs" />
     <Compile Include="Interfaces\IMarker.cs" />
     <Compile Include="DrawObjects\Marker.cs" />
     <Compile Include="Interfaces\IContact.cs" />

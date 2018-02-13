@@ -188,9 +188,7 @@ namespace TacticsLibrary
             var newContact = referenceContactFactory.CreateContact(RadarReceiver, position, heading, altitude, speed, contactType);
 
             Logger.Info($"Adding contact: {contactType} as a plotted contact at {position}");
-            newContact.PropertyChanged += Contact_PropertyChanged;
-            newContact.UpdateRegion += NewContact_UpdateRegion;
-
+            newContact.ReferencePointChanged += NewContact_ReferencePointChanged;
             RadarReceiver.AddContact((IContact) newContact);
             RefreshContactList();
             plotPanel.Invalidate();
@@ -198,11 +196,25 @@ namespace TacticsLibrary
             return newContact;
         }
 
-        private void NewContact_UpdateRegion(Region updateRegion)
+        private void NewContact_ReferencePointChanged(object sender, EventHandlers.ReferencePointChangedEventArgs e)
         {
-            plotPanel.Invalidate(updateRegion);
+            if (plotPanel.InvokeRequired)
+            {
+                Logger.Error("Unable to update until invocation from another thread is fixed");
+            }
+            else
+            {
+                if ((e.RectangleRegionsF?.Count ?? 0) > 0)
+                {
+                    var region = new Region();
+                    e.RectangleRegionsF.ForEach(rect =>
+                    {
+                        region.Union(rect);
+                    });
+                    plotPanel.Invalidate(region);
+                }
+            }
         }
-
 
         /// <summary>
         /// 

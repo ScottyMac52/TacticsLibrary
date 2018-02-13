@@ -29,15 +29,7 @@ namespace TacticsLibrary.Interfaces
         public Marker BullsEye { get; private set; }
         public Marker HomePlate { get; private set; }
         public PointF OwnShip => new PointF(ViewPortExtent.GetCenterWidth(), ViewPortExtent.GetCenterHeight());
-
         public Action<IGraphics, IReferencePoint> PaintMethod { get; protected set; }
-
-        public event UpdateRegionEventHandler UpdatePending;
-
-        protected virtual void OnUpdatePending(Region updateRegion)
-        {
-            UpdatePending?.Invoke(updateRegion);
-        }
 
         public RadarPicture(Marker bullsEye, Marker homePlate, SizeF viewPortExtent, ILog logger = null)
         {

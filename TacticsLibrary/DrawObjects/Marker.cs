@@ -11,8 +11,8 @@ namespace TacticsLibrary.Interfaces
     /// </summary>
     public class Marker : ReferencePoint, IMarker
     {
-        public Marker(ISensor detectedBy, PointF position) 
-            : base(detectedBy, position)
+        public Marker(ISensor detectedBy, PointF position)
+            : base(detectedBy, position, null)
         {
 
         }

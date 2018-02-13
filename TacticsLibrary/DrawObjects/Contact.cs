@@ -8,6 +8,8 @@ using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 using TacticsLibrary.DrawObjects;
+using TacticsLibrary.EventHandlers;
+using System.Collections.Generic;
 
 namespace TacticsLibrary.Interfaces
 {
@@ -36,10 +38,12 @@ namespace TacticsLibrary.Interfaces
 
         public Action ProcessLoop { get; set; }
 
+        public override event ReferencePointChangedEventHandler ReferencePointChanged;
+
         /// <summary>
         /// Creates a plotted point
         /// </summary>
-        internal Contact(ISensor detectedBy, PointF position) : base(detectedBy, position)
+        internal Contact(ISensor detectedBy, PointF position) : base(detectedBy, position, null)
         {
             DetectedBy = detectedBy;
             LastUpdate = TimeStamp;
@@ -51,11 +55,6 @@ namespace TacticsLibrary.Interfaces
             {
                 Logger = LogManager.GetLogger(typeof(Contact));
             }
-        }
-
-        internal Contact(ISensor detectedBy, PointF position) : this(detectedBy, position)
-        {
-            Logger = logger;
         }
         
         private void DefaultProcessing()
@@ -79,14 +78,15 @@ namespace TacticsLibrary.Interfaces
                         var newPos = CoordinateConverter.CalculatePointFromDegrees(RelativePosition, new PolarCoordinate(Heading, distance), CoordinateConverter.ROUND_DIGITS);
                         var newAbsPos = newPos.GetAbsolutePosition(DetectedBy.ViewPortExtent);
                         // Create Region and add the previous window to it
-                        var newRegion = new Region(DetectionWindow);
+                        var oldRectPos = DetectionWindow;
                         // Set the new Position
                         Position = newAbsPos;
                         // Add the new position to the Region
-                        newRegion.Union(DetectionWindow);
-                        // Invalidate the Region to cause that are to be repainted
-
-                        // TODO: Need to notify the ISensor to repaint
+                        var newRectPos = DetectionWindow;
+                        var rectangleList = new List<RectangleF>();
+                        rectangleList.AddRange(new List<RectangleF>() { oldRectPos, newRectPos });
+                        // Notify the ISensor to repaint
+                        ReferencePointChanged?.Invoke(this, new ReferencePointChangedEventArgs(rectangleList, UpdateEventTypes.PositionChange, nameof(Position)));
 
                         if (_lockTaken)
                         {
