@@ -142,10 +142,6 @@ namespace TacticsLibrary.Interfaces
 
         }
 
-        public void AddReference(PointF refLocation, string refName, Image refImage)
-        {
-        }
-
         private void Contact_UpdatePending(IReferencePoint referencePoint)
         {
             Logger.Debug($"Updating contact: {referencePoint}");

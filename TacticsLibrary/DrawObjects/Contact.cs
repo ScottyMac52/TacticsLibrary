@@ -49,7 +49,9 @@ namespace TacticsLibrary.Interfaces
             LastUpdate = TimeStamp;
             ProcessThread = new Thread(new ThreadStart(ProcessLoop ?? DefaultProcessing));
             Running = true;
+            Logger?.Info($"{this} firing ReferencePointChanged");
             ProcessThread.Start();
+        }
 
             if(Logger == null)
             {
