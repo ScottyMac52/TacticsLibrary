@@ -47,12 +47,40 @@ namespace TacticsLibrary.Interfaces
         {
             DetectedBy = detectedBy;
             LastUpdate = TimeStamp;
+            ReferencePointChanged += Contact_ReferencePointChanged;
             ProcessThread = new Thread(new ThreadStart(ProcessLoop ?? DefaultProcessing));
             Running = true;
             Logger?.Info($"{this} firing ReferencePointChanged");
             ProcessThread.Start();
         }
-        
+
+        private void Contact_ReferencePointChanged(object sender, ReferencePointChangedEventArgs e)
+        {
+            switch (e.EventType)
+            {
+                case UpdateEventTypes.Unknown:
+                    break;
+                case UpdateEventTypes.New:
+                    Running = true;
+                    break;
+                case UpdateEventTypes.PositionChange:
+                    break;
+                case UpdateEventTypes.SpeedChange:
+                    break;
+                case UpdateEventTypes.AltitudeChange:
+                    break;
+                case UpdateEventTypes.HeadingChange:
+                    break;
+                case UpdateEventTypes.SelectedChange:
+                    break;
+                case UpdateEventTypes.ShowTextChange:
+                    break;
+                case UpdateEventTypes.Remove:
+                    Running = false;
+                    break;
+            }
+        }
+
         private void DefaultProcessing()
         {
             while (Running)

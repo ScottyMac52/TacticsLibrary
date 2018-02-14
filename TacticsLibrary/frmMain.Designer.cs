@@ -204,7 +204,7 @@
             this.plotPanel.TabIndex = 1;
             this.plotPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.PlotPanel_Paint);
             this.plotPanel.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseDoubleClick);
-            this.plotPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseMove);
+            this.plotPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PlotPanel_MouseMove);
             // 
             // lblCurrentWidth
             // 
@@ -242,9 +242,9 @@
             this.Name = "frmMain";
             this.Text = "Main Plot";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
-            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseClick);
+            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.PlotPanel_MouseClick);
             this.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseDoubleClick);
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseMove);
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PlotPanel_MouseMove);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);

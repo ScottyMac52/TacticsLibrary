@@ -26,6 +26,7 @@ namespace TacticsLibrary.Interfaces
         DateTime LastUpdate { get; }
         PolarCoordinate PolarPosit { get; }
         Guid UniqueId { get; }
+        bool Initialized { get; }
 
         #endregion
 

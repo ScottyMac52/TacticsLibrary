@@ -11,6 +11,7 @@ using TacticsLibrary.Enums;
 using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 using TacticsLibrary.DrawObjects;
+using System.Threading.Tasks;
 
 namespace TacticsLibrary
 {
@@ -43,31 +44,11 @@ namespace TacticsLibrary
                 ContactTypes.AirUnknown,
                 new PolarCoordinate(180.00, 100.00),
                 360.00,
-                130000.00,
+                13000.00,
                 52000);
-        }
 
-        private void Contact_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            var refPoint = sender as IContact;
-            
-            // If the contact is off the sensor then we 
-            if(refPoint.RelativePosition.GetPolarCoord().Radius > RadarReceiver.Radius)
-            {
-                // remove it from the contact collection 
-                RadarReceiver.CurrentContacts.Remove(refPoint.UniqueId);
-                // tell it's thread to stop
-                refPoint.Running = false;
-                // log it
-                Logger.Info($"Contact {refPoint} removed as it's off the sensor range.");
-                RefreshContactList();
-            }
-            
-            if (Logger?.IsDebugEnabled ?? false)
-            {
-                Logger.Debug($"{((IContact)sender).UniqueId} : {e.PropertyName} has changed.");
-            }
-            plotPanel.Invalidate();
+            RefreshContactList();
+
         }
 
         /// <summary>
@@ -92,7 +73,6 @@ namespace TacticsLibrary
                 var polarPosition = new PolarCoordinate(randomBearing, randomRange);
                 var newContact = CreateContactAtPolarCoordinate(relativePosition, contactType, polarPosition, heading, speed, altitude);
                 Logger.Info($"Adding contact: {newContact} as a random contact.");
-                // newContact.PropertyChanged += Contact_PropertyChanged;
                 randPlots.Add(newContact);
                 RadarReceiver.AddContact((IContact) newContact);
             }
@@ -113,7 +93,7 @@ namespace TacticsLibrary
 
         private RadarPicture InitializeRadar()
         {
-            var bullsEye = new Marker(RadarReceiver, new PointF(123, 90))
+            var bullsEye = new Marker(RadarReceiver, new PointF(123, 90), Logger)
             {
                 Name = "Bullseye",
                 Speed = 0.00,
@@ -126,7 +106,7 @@ namespace TacticsLibrary
                 }
             };
 
-            var homePlate = new Marker(RadarReceiver, new PointF(100, 200))
+            var homePlate = new Marker(RadarReceiver, new PointF(100, 200), Logger)
             {
                 Name = "Homeplate",
                 Speed = 0.00,
@@ -168,6 +148,7 @@ namespace TacticsLibrary
                 if (Enum.TryParse(typeToPlot, out contactType))
                 {
                     var newContact = CreateContactAtPoint(absolutePosition, contactType, decimal.ToInt32(contactCourse.Value), decimal.ToInt32(contactSpeed.Value));
+                    RefreshContactList();
                 }
             }
         }
@@ -190,31 +171,63 @@ namespace TacticsLibrary
             Logger.Info($"Adding contact: {contactType} as a plotted contact at {position}");
             newContact.ReferencePointChanged += NewContact_ReferencePointChanged;
             RadarReceiver.AddContact((IContact) newContact);
-            RefreshContactList();
             newContact.ReferencePointChanged += NewContact_ReferencePointChanged;
-            plotPanel.Invalidate();
             Logger.Info($"New contact added: {newContact}");
             return newContact;
         }
 
+        /// <summary>
+        /// Process the <see cref="ReferencePoint"/> change in position in the <see cref="ISensor"/>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void NewContact_ReferencePointChanged(object sender, EventHandlers.ReferencePointChangedEventArgs e)
         {
-            if (plotPanel.InvokeRequired)
+
+            var refPoint = sender as IContact;
+
+            // If the contact is off the sensor then we 
+            if (refPoint.RelativePosition.GetPolarCoord().Radius > RadarReceiver.Radius)
             {
-                Logger.Error("Unable to update until invocation from another thread is fixed");
+                // remove it from the contact collection 
+                RadarReceiver.CurrentContacts.Remove(refPoint.UniqueId);
+                // tell it's thread to stop
+                refPoint.Running = false;
+                // log it
+                Logger.Info($"Contact {refPoint} removed as it's off the sensor range.");
             }
-            else
+
+            if (Logger?.IsDebugEnabled ?? false)
             {
-                if ((e.RectangleRegionsF?.Count ?? 0) > 0)
+                Logger.Debug($"{((IContact)sender).UniqueId} : {e.PropertyName} has changed.");
+            }
+
+            // If there are rectangles to process
+            if ((e.RectangleRegionsF?.Count ?? 0) > 0)
+            {
+                // Create a Region and add the Rectangles to it
+                var region = new Region();
+                e.RectangleRegionsF.ForEach(rect =>
                 {
-                    var region = new Region();
-                    e.RectangleRegionsF.ForEach(rect =>
+                    region.Union(rect);
+                });
+
+                // If we are being called from another thread 
+                if (plotPanel.InvokeRequired)
+                {
+                    // use a MethodInvoker to invoke the method
+                    plotPanel.Invoke(new MethodInvoker(delegate
                     {
-                        region.Union(rect);
-                    });
+                        plotPanel.Invalidate(region);
+                    }));
+                }
+                else
+                {
                     plotPanel.Invalidate(region);
                 }
             }
+
+            RefreshContactList();
         }
 
         /// <summary>
@@ -235,7 +248,7 @@ namespace TacticsLibrary
             return CreateContactAtPoint(newAbsolutePosition, contactType, heading, speed, altitude);
         }
 
-        private void plotPanel_MouseClick(object sender, MouseEventArgs e)
+        private void PlotPanel_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
@@ -249,7 +262,7 @@ namespace TacticsLibrary
             }
         }
 
-        private void plotPanel_MouseMove(object sender, MouseEventArgs e)
+        private void PlotPanel_MouseMove(object sender, MouseEventArgs e)
         {
             lblPosition.Text = $"{e.Location}";
             CursorPosition = e.Location.ConvertTo();
@@ -263,27 +276,47 @@ namespace TacticsLibrary
 
         private void RefreshContactList()
         {
+
             var dataBindList = RadarReceiver
                 .CurrentContacts
                 .Values
-                .Where(contact => contact.Running);
-            gridViewContacts.DataSource = dataBindList;
-            gridViewContacts.Refresh();
+                .Where(contact => contact.Running)
+                .ToList();
+
+            if (gridViewContacts.InvokeRequired)
+            {
+                gridViewContacts.Invoke(new MethodInvoker(delegate
+                {
+                    gridViewContacts.DataSource = dataBindList;
+                    gridViewContacts.Refresh();
+                }));
+            }
+            else
+            {
+                gridViewContacts.DataSource = dataBindList;
+                gridViewContacts.Refresh();
+            }
+
         }
 
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            RadarReceiver?.CurrentContacts.Values.ToList().ForEach(cont =>
+            Task.Run(() =>
             {
-                cont.Running = false;
+                RadarReceiver?.CurrentContacts.Values.ToList().ForEach(cont =>
+                {
+                    cont.Running = false;
+                    Thread.Sleep(Contact.DEFAULT_UPDATE_MILISECONDS * 2);
+                });
             });
 
-            Thread.Sleep(1000);
+            Thread.Sleep(Contact.DEFAULT_UPDATE_MILISECONDS * 10);
 
             e.Cancel = RadarReceiver.CurrentContacts.Values.Any(cnt =>
             {
                 return cnt.ProcessThread.IsAlive;
             });
+
         }
     }
 }

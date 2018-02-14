@@ -33,6 +33,7 @@ namespace TacticsLibrary.DrawObjects
             TimeStamp = DateTime.UtcNow;
             Position = position;
             Logger = Logger;
+            ReferencePointChanged?.Invoke(this, new ReferencePointChangedEventArgs(null, UpdateEventTypes.New, "Ctor"));
         }
         #endregion
         
@@ -85,7 +86,7 @@ namespace TacticsLibrary.DrawObjects
         #endregion  Properties that can be externally changed and notifcation is provided
 
         #region Properties that are calculated 
-
+        public bool Initialized { get; private set; }
         /// <summary>
         /// Timestamp the reference was added
         /// </summary>
@@ -139,6 +140,12 @@ namespace TacticsLibrary.DrawObjects
                     break;
                 case nameof(Selected):
                     eventType = UpdateEventTypes.SelectedChange;
+                    break;
+                case "New":
+                    Initialized = true;
+                    break;
+                case "Remove":
+                    Initialized = false;
                     break;
             }
 

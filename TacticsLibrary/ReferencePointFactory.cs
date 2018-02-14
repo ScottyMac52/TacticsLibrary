@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Drawing;
 using TacticsLibrary.DrawObjects;
 using TacticsLibrary.Enums;
@@ -20,9 +21,12 @@ namespace TacticsLibrary
             };
         }
 
-        public IReferencePoint CreateMarker(ISensor addedTo, PointF position)
+        public IReferencePoint CreateMarker(string name, ISensor addedTo, PointF position, ILog logger)
         {
-            return new Marker(addedTo, position);
+            return new Marker(addedTo, position, logger)
+            {
+                Name = name
+            };
         }
 
     }
