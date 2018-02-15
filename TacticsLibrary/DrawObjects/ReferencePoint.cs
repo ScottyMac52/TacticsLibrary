@@ -32,7 +32,14 @@ namespace TacticsLibrary.DrawObjects
             UniqueId = Guid.NewGuid();
             TimeStamp = DateTime.UtcNow;
             Position = position;
-            Logger = Logger;
+            if (logger == null)
+            {
+                Logger = LogManager.GetLogger(typeof(ReferencePoint));
+            }
+            else
+            {
+                Logger = Logger;
+            }
             ReferencePointChanged?.Invoke(this, new ReferencePointChangedEventArgs(null, UpdateEventTypes.New, "Ctor"));
         }
         #endregion

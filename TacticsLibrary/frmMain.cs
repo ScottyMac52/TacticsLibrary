@@ -35,17 +35,18 @@ namespace TacticsLibrary
             base.OnLoad(e);
             RandomNumberGen = new Random((int)DateTime.Now.Ticks);
             var newPosition = new PointF(RadarReceiver.ViewPortExtent.GetCenterWidth(), RadarReceiver.ViewPortExtent.GetCenterHeight());
-            var newContact = CreateContactAtPoint(newPosition, ContactTypes.AirFriendly, 90, 450, 36000);
-            var chaseContact = CreateContactAtPolarCoordinate(newContact.Position, ContactTypes.AirEnemy, new PolarCoordinate(270.00, 25.00), 90.00, 780, 36000);
-
+            GenerateRandomPlots(RadarReceiver.BullsEye.Position, 100.00, RandomNumberGen.Next(100));
+            // var newContact = CreateContactAtPoint(newPosition, ContactTypes.AirFriendly, 90, 4500, 36000);
+            // var chaseContact = CreateContactAtPolarCoordinate(newContact.Position, ContactTypes.AirEnemy, new PolarCoordinate(270.00, 25.00), 90.00, 7800, 36000);
+             
             // Create a target that is 180° 25 miles from BullsEye
-            var newBullsEyeTarget = CreateContactAtPolarCoordinate(
-                RadarReceiver.BullsEye.Position,
-                ContactTypes.AirUnknown,
-                new PolarCoordinate(180.00, 100.00),
-                360.00,
-                13000.00,
-                52000);
+            // var newBullsEyeTarget = CreateContactAtPolarCoordinate(
+            //    RadarReceiver.BullsEye.Position,
+            //   ContactTypes.AirUnknown,
+            //    new PolarCoordinate(180.00, 100.00),
+            //    360.00,
+            //    13000.00,
+            //    52000);
 
             RefreshContactList();
 
@@ -186,48 +187,45 @@ namespace TacticsLibrary
 
             var refPoint = sender as IContact;
 
-            // If the contact is off the sensor then we 
-            if (refPoint.RelativePosition.GetPolarCoord().Radius > RadarReceiver.Radius)
+            if (refPoint.Running)
             {
-                // remove it from the contact collection 
-                RadarReceiver.CurrentContacts.Remove(refPoint.UniqueId);
-                // tell it's thread to stop
-                refPoint.Running = false;
-                // log it
-                Logger.Info($"Contact {refPoint} removed as it's off the sensor range.");
-            }
 
-            if (Logger?.IsDebugEnabled ?? false)
-            {
-                Logger.Debug($"{((IContact)sender).UniqueId} : {e.PropertyName} has changed.");
-            }
-
-            // If there are rectangles to process
-            if ((e.RectangleRegionsF?.Count ?? 0) > 0)
-            {
-                // Create a Region and add the Rectangles to it
-                var region = new Region();
-                e.RectangleRegionsF.ForEach(rect =>
+                // If the contact is off the sensor then we 
+                if (refPoint.RelativePosition.GetPolarCoord().Radius > RadarReceiver.Radius)
                 {
-                    region.Union(rect);
-                });
+                    // remove it from the contact collection 
+                    RadarReceiver.CurrentContacts.Remove(refPoint.UniqueId);
+                    // tell it's thread to stop
+                    refPoint.OnStopRequest();
+                    // log it
+                    Logger.Info($"Contact {refPoint} removed as it's off the sensor range.");
+                }
 
-                // If we are being called from another thread 
-                if (plotPanel.InvokeRequired)
+                if (Logger?.IsDebugEnabled ?? false)
                 {
-                    // use a MethodInvoker to invoke the method
-                    plotPanel.Invoke(new MethodInvoker(delegate
+                    Logger.Debug($"{((IContact)sender).UniqueId} : {e.PropertyName} has changed.");
+                }
+
+                // If there are rectangles to process
+                if ((e.RectangleRegionsF?.Count ?? 0) > 0)
+                {
+                    // If we are being called from another thread 
+                    if (plotPanel.InvokeRequired)
                     {
-                        plotPanel.Invalidate(region);
-                    }));
-                }
-                else
-                {
-                    plotPanel.Invalidate(region);
+                        // use a MethodInvoker to invoke the method
+                        plotPanel.Invoke(new MethodInvoker(delegate
+                        {
+                            plotPanel.Invalidate();
+                        }));
+                    }
+                    else
+                    {
+                        plotPanel.Invalidate();
+                    }
                 }
             }
 
-            RefreshContactList();
+            //RefreshContactList();
         }
 
         /// <summary>
@@ -301,22 +299,14 @@ namespace TacticsLibrary
 
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Task.Run(() =>
+            RadarReceiver?.CurrentContacts.Values.ToList().ForEach(cont =>
             {
-                RadarReceiver?.CurrentContacts.Values.ToList().ForEach(cont =>
-                {
-                    cont.Running = false;
-                    Thread.Sleep(Contact.DEFAULT_UPDATE_MILISECONDS * 2);
-                });
+                cont.OnStopRequest();
             });
-
-            Thread.Sleep(Contact.DEFAULT_UPDATE_MILISECONDS * 10);
-
             e.Cancel = RadarReceiver.CurrentContacts.Values.Any(cnt =>
             {
-                return cnt.ProcessThread.IsAlive;
+                return cnt.Running;
             });
-
         }
     }
 }

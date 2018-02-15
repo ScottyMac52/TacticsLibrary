@@ -5,12 +5,14 @@ using System.Threading;
 using TacticsLibrary.Enums;
 using TacticsLibrary.DrawObjects;
 using static TacticsLibrary.DrawObjects.ReferencePoint;
+using TacticsLibrary.EventHandlers;
 
 namespace TacticsLibrary.Interfaces
 {
     public interface IContact
     {
         void Draw(IGraphics g);
+        void OnStopRequest();
         Guid UniqueId { get; }
         DateTime TimeStamp { get; }
         ContactTypes ContactType { get; }
@@ -27,7 +29,8 @@ namespace TacticsLibrary.Interfaces
         bool ShowText { get; set; }
         ISensor DetectedBy { get; }
         Thread ProcessThread { get; }
-        bool Running { get; set; }
+        bool Running { get;  }
         int? CustomUpdateDuration { get; set; }
+        event ReferencePointChangedEventHandler ReferencePointChanged;
     }
 }

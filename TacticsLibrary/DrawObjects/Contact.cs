@@ -1,15 +1,13 @@
-﻿using log4net;
-using System;
-using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
+using System.Threading.Tasks;
 using TacticsLibrary.Converters;
-using TacticsLibrary.Enums;
-using TacticsLibrary.Extensions;
-using TacticsLibrary.Interfaces;
 using TacticsLibrary.DrawObjects;
+using TacticsLibrary.Enums;
 using TacticsLibrary.EventHandlers;
-using System.Collections.Generic;
+using TacticsLibrary.Extensions;
 
 namespace TacticsLibrary.Interfaces
 {
@@ -18,26 +16,46 @@ namespace TacticsLibrary.Interfaces
     /// </summary>
     public class Contact : ReferencePoint, IVisibleObjects, IEquatable<Contact>, IContact
     {
+        private bool _processThreadRunning = false;
+
         public const double SECONDS_PER_HOUR = 3600.00;
         public const int DEFAULT_UPDATE_MILISECONDS = 200;
-        
+
+        /// <summary>
+        /// <see cref="Thread" that is running this contact>
+        /// </summary>
         public Thread ProcessThread { get; protected set; }
+
+        /// <summary>
+        /// Allows for a custom sleep time in the processing thread, in ms
+        /// </summary>
         public int? CustomUpdateDuration { get; set; }
+
         /// <summary>
         /// Contact type
         /// </summary>
         /// <see cref="ContactTypes"/>
         public ContactTypes ContactType { get; set; }
+
         /// <summary>
         /// The interface that draws the contact
         /// </summary>
         /// <see cref="IDrawContact"/>
         public IDrawContact ContactDrawer { get; protected set; }
 
-        public bool Running { get; set; }
+        /// <summary>
+        /// Is the ProcessThread still running
+        /// </summary>
+        public bool Running => _processThreadRunning;
 
+        /// <summary>
+        /// Optional <see cref="Action"/> to run for new contacts when they are created
+        /// </summary>
         public Action ProcessLoop { get; set; }
 
+        /// <summary>
+        /// State change notification
+        /// </summary>
         public override event ReferencePointChangedEventHandler ReferencePointChanged;
 
         /// <summary>
@@ -49,41 +67,45 @@ namespace TacticsLibrary.Interfaces
             LastUpdate = TimeStamp;
             ReferencePointChanged += Contact_ReferencePointChanged;
             ProcessThread = new Thread(new ThreadStart(ProcessLoop ?? DefaultProcessing));
-            Running = true;
-            Logger?.Info($"{this} firing ReferencePointChanged");
-            ProcessThread.Start();
+            Logger?.Info($"{this} firing ReferencePointChanged for new");
+            ReferencePointChanged?.Invoke(this, new ReferencePointChangedEventArgs(null, UpdateEventTypes.New, ""));
+        }
+
+        public void OnStopRequest()
+        {
+            ReferencePointChanged?.Invoke(this, new ReferencePointChangedEventArgs(null, UpdateEventTypes.Remove, ""));
+            while (ProcessThread?.IsAlive ?? false)
+            {
+                // No wait
+            }
         }
 
         private void Contact_ReferencePointChanged(object sender, ReferencePointChangedEventArgs e)
         {
             switch (e.EventType)
             {
-                case UpdateEventTypes.Unknown:
-                    break;
                 case UpdateEventTypes.New:
-                    Running = true;
-                    break;
-                case UpdateEventTypes.PositionChange:
-                    break;
-                case UpdateEventTypes.SpeedChange:
-                    break;
-                case UpdateEventTypes.AltitudeChange:
-                    break;
-                case UpdateEventTypes.HeadingChange:
-                    break;
-                case UpdateEventTypes.SelectedChange:
-                    break;
-                case UpdateEventTypes.ShowTextChange:
+                    ProcessThread?.Start();
+                    _processThreadRunning = true;
                     break;
                 case UpdateEventTypes.Remove:
-                    Running = false;
+                    // Abort the process thread
+                    try
+                    {
+                        ProcessThread?.Abort();
+                    }
+                    catch (ThreadAbortException)
+                    {
+                        Logger?.Warn($"{this} has been aborted ");
+                    }
+                    _processThreadRunning = false;
                     break;
             }
         }
 
         private void DefaultProcessing()
         {
-            while (Running)
+            while (_processThreadRunning)
             {
                 bool _lockTaken = false;
                 if (Speed > 0)

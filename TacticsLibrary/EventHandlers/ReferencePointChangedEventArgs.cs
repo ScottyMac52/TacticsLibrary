@@ -10,8 +10,11 @@ namespace TacticsLibrary.EventHandlers
         public ReferencePointChangedEventArgs(IList<RectangleF> rectanglesForRegion, UpdateEventTypes eventType, string propertyName) 
             : base(propertyName)
         {
-            RectangleRegionsF = new List<RectangleF>();
-            RectangleRegionsF.AddRange(rectanglesForRegion);
+            if ((rectanglesForRegion?.Count ?? 0) > 0)
+            {
+                RectangleRegionsF = new List<RectangleF>();
+                RectangleRegionsF.AddRange(rectanglesForRegion);
+            }
             EventType = eventType;
             PropertyName = propertyName;
         }

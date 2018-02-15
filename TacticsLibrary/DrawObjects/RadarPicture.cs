@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Threading.Tasks;
+using TacticsLibrary.Adapters;
 using TacticsLibrary.Extensions;
 using static TacticsLibrary.DrawObjects.ReferencePoint;
 
@@ -62,11 +64,12 @@ namespace TacticsLibrary.Interfaces
             BullsEye?.PaintMethod?.Invoke(g, BullsEye);
             HomePlate?.PaintMethod?.Invoke(g, HomePlate);
 
-            // Plot all points
-            foreach (var item in CurrentContacts)
-            {
-                item.Value.Draw(g);
-            }
+            CurrentContacts.Where(cont => cont.Value.Running == true)
+                .ToList()
+                .ForEach(con => {
+                    IGraphics newContext = new GraphicsAdapter(g.Context);
+                    con.Value.Draw(newContext);
+                });
         }
 
         /// <summary>
