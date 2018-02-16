@@ -12,7 +12,8 @@ namespace TacticsLibrary.Interfaces
     public interface IContact
     {
         void Draw(IGraphics g);
-        void OnStopRequest();
+        void Stop();
+        void Start();
         Guid UniqueId { get; }
         DateTime TimeStamp { get; }
         ContactTypes ContactType { get; }
@@ -29,6 +30,7 @@ namespace TacticsLibrary.Interfaces
         bool ShowText { get; set; }
         ISensor DetectedBy { get; }
         Thread ProcessThread { get; }
+        ManualResetEvent StopEvent { get; }
         bool Running { get;  }
         int? CustomUpdateDuration { get; set; }
         event ReferencePointChangedEventHandler ReferencePointChanged;

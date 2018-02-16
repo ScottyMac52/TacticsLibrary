@@ -413,7 +413,7 @@ namespace TacticsLibrary.tests
         {
             // ARRANGE
             var expectedResult = new PointF(7.778F, 7.778F);
-            var expectedAbsResult = new PointF(255.778F, 240.222F);
+            var expectedAbsResult = new PointF(131.778F, 116.222F);
             var startPoint = new PointF(.707F, .707F);
 
             // ACT

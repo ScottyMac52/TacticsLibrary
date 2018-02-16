@@ -17,7 +17,6 @@ namespace TacticsLibrary
                 Altitude = altitude,
                 Speed = speed,
                 ContactType = contactType,
-                ProcessLoop = processContact,
                 CustomUpdateDuration = 2500
             };
         }

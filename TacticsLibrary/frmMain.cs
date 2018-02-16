@@ -38,7 +38,7 @@ namespace TacticsLibrary
             GenerateRandomPlots(RadarReceiver.BullsEye.Position, 100.00, RandomNumberGen.Next(100));
             // var newContact = CreateContactAtPoint(newPosition, ContactTypes.AirFriendly, 90, 4500, 36000);
             // var chaseContact = CreateContactAtPolarCoordinate(newContact.Position, ContactTypes.AirEnemy, new PolarCoordinate(270.00, 25.00), 90.00, 7800, 36000);
-             
+
             // Create a target that is 180° 25 miles from BullsEye
             // var newBullsEyeTarget = CreateContactAtPolarCoordinate(
             //    RadarReceiver.BullsEye.Position,
@@ -47,9 +47,89 @@ namespace TacticsLibrary
             //    360.00,
             //    13000.00,
             //    52000);
-
+            GenerateColumns();
             RefreshContactList();
 
+        }
+
+        private void GenerateColumns()
+        {
+            gridViewContacts.AutoGenerateColumns = false;
+
+            var columns = new DataGridViewColumn[] {
+
+                new DataGridViewButtonColumn()
+                {
+                    HeaderText = "Remove",
+                    Name = "btnRemove",
+                    ValueType = typeof(string),
+                    Visible = true,
+                    CellTemplate = new DataGridViewButtonCell() {  ToolTipText = "Remove from the sensor", Value = "Remove" },
+                    Width = 50
+                },
+                new DataGridViewColumn()
+                {
+                    DataPropertyName = "PolarPosit",
+                    HeaderText = "Polar",
+                    Name = "polarPositPosition",
+                    ValueType = typeof(string),
+                    Visible = true,
+                    CellTemplate = new DataGridViewTextBoxCell() { ToolTipText = "Polar position in reference to the center" },
+                    Width = 175
+
+                },
+                new DataGridViewColumn()
+                {
+                    DataPropertyName = "Running",
+                    HeaderText = "Running",
+                    Name = "chkRunning",
+                    ValueType = typeof(bool),
+                    Visible = true,
+                    CellTemplate = new DataGridViewCheckBoxCell() {  ToolTipText = "The contact's processing status" }
+                },
+                new DataGridViewColumn()
+                {
+                    DataPropertyName = "Speed",
+                    HeaderText = "Speed",
+                    Name = "speed",
+                    ValueType = typeof(double),
+                    Visible = true,
+                    CellTemplate = new DataGridViewTextBoxCell() {  ToolTipText = "The contact's speed in knts" }
+                },
+                new DataGridViewColumn()
+                {
+                    DataPropertyName = "Heading",
+                    HeaderText = "Heading",
+                    Name = "heading",
+                    ValueType = typeof(double),
+                    Visible = true,
+                    CellTemplate = new DataGridViewTextBoxCell() {  ToolTipText = "The contact's heading in °" }
+                }
+
+            };
+
+            gridViewContacts.CellClick += GridViewContacts_CellClick;
+
+            for (int x=0; x < columns.Length; x++)
+            {
+                gridViewContacts.Columns.Add(columns[x]);
+            }
+        }
+
+        private void GridViewContacts_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            switch (e.ColumnIndex)
+            {
+                case 0:
+                    var contact = gridViewContacts.Rows[e.RowIndex].DataBoundItem as IContact;
+                    if(MessageBox.Show(this, $"{contact}", "Delete this contact?", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+                    {
+                        contact.Stop();
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         /// <summary>
@@ -75,7 +155,6 @@ namespace TacticsLibrary
                 var newContact = CreateContactAtPolarCoordinate(relativePosition, contactType, polarPosition, heading, speed, altitude);
                 Logger.Info($"Adding contact: {newContact} as a random contact.");
                 randPlots.Add(newContact);
-                RadarReceiver.AddContact((IContact) newContact);
             }
             return randPlots;
         }
@@ -174,6 +253,7 @@ namespace TacticsLibrary
             RadarReceiver.AddContact((IContact) newContact);
             newContact.ReferencePointChanged += NewContact_ReferencePointChanged;
             Logger.Info($"New contact added: {newContact}");
+            ((IContact) newContact).Start();
             return newContact;
         }
 
@@ -187,45 +267,46 @@ namespace TacticsLibrary
 
             var refPoint = sender as IContact;
 
-            if (refPoint.Running)
+            if(!refPoint.Running)
             {
+                return;
+            }
 
-                // If the contact is off the sensor then we 
-                if (refPoint.RelativePosition.GetPolarCoord().Radius > RadarReceiver.Radius)
-                {
-                    // remove it from the contact collection 
-                    RadarReceiver.CurrentContacts.Remove(refPoint.UniqueId);
-                    // tell it's thread to stop
-                    refPoint.OnStopRequest();
-                    // log it
-                    Logger.Info($"Contact {refPoint} removed as it's off the sensor range.");
-                }
+            // If the contact is off the sensor then we 
+            if (refPoint.RelativePosition.GetPolarCoord().Radius > RadarReceiver.Radius)
+            {
+                // remove it from the contact collection 
+                RadarReceiver.CurrentContacts.Remove(refPoint.UniqueId);
+                // tell it's thread to stop
+                refPoint.Stop();
+                // log it
+                Logger.Info($"Contact {refPoint} removed as it's off the sensor range.");
+            }
 
-                if (Logger?.IsDebugEnabled ?? false)
-                {
-                    Logger.Debug($"{((IContact)sender).UniqueId} : {e.PropertyName} has changed.");
-                }
+            if (Logger?.IsDebugEnabled ?? false)
+            {
+                Logger.Debug($"{((IContact)sender).UniqueId} : {e.PropertyName} has changed.");
+            }
 
-                // If there are rectangles to process
-                if ((e.RectangleRegionsF?.Count ?? 0) > 0)
+            // If there are rectangles to process
+            if ((e.RectangleRegionsF?.Count ?? 0) > 0)
+            {
+                // If we are being called from another thread 
+                if (plotPanel.InvokeRequired)
                 {
-                    // If we are being called from another thread 
-                    if (plotPanel.InvokeRequired)
-                    {
-                        // use a MethodInvoker to invoke the method
-                        plotPanel.Invoke(new MethodInvoker(delegate
-                        {
-                            plotPanel.Invalidate();
-                        }));
-                    }
-                    else
+                    // use a MethodInvoker to invoke the method
+                    plotPanel.Invoke(new MethodInvoker(delegate
                     {
                         plotPanel.Invalidate();
-                    }
+                    }));
+                }
+                else
+                {
+                    plotPanel.Invalidate();
                 }
             }
 
-            //RefreshContactList();
+            // RefreshContactList();
         }
 
         /// <summary>
@@ -299,10 +380,16 @@ namespace TacticsLibrary
 
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            RadarReceiver?.CurrentContacts.Values.ToList().ForEach(cont =>
+            RadarReceiver
+            .CurrentContacts
+            .Values
+            .Where(contact => contact.Running)
+            .ToList()
+            .ForEach(cont =>
             {
-                cont.OnStopRequest();
+                cont.Stop();
             });
+
             e.Cancel = RadarReceiver.CurrentContacts.Values.Any(cnt =>
             {
                 return cnt.Running;

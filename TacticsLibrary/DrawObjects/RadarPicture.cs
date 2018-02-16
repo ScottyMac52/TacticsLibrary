@@ -64,11 +64,11 @@ namespace TacticsLibrary.Interfaces
             BullsEye?.PaintMethod?.Invoke(g, BullsEye);
             HomePlate?.PaintMethod?.Invoke(g, HomePlate);
 
-            CurrentContacts.Where(cont => cont.Value.Running == true)
+            CurrentContacts.Where(cont => cont.Value?.Running ?? false == true)
                 .ToList()
                 .ForEach(con => {
                     IGraphics newContext = new GraphicsAdapter(g.Context);
-                    con.Value.Draw(newContext);
+                    con.Value?.Draw(newContext);
                 });
         }
 
