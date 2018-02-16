@@ -119,8 +119,7 @@ namespace TacticsLibrary.Interfaces
                     rectangleList.AddRange(new List<RectangleF>() { oldRectPos, newRectPos });
                     // Notify the ISensor to repaint
                     ReferencePointChanged?.Invoke(this, new ReferencePointChangedEventArgs(rectangleList, UpdateEventTypes.PositionChange, nameof(Position)));
-                    //                    Thread.Sleep(CustomUpdateDuration ?? DEFAULT_UPDATE_MILISECONDS);
-                    Thread.Sleep(DEFAULT_UPDATE_MILISECONDS);
+                    Thread.Sleep(CustomUpdateDuration ?? DEFAULT_UPDATE_MILISECONDS);
                 }
             }
         }

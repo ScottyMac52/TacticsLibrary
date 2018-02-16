@@ -35,7 +35,7 @@ namespace TacticsLibrary
             base.OnLoad(e);
             RandomNumberGen = new Random((int)DateTime.Now.Ticks);
             var newPosition = new PointF(RadarReceiver.ViewPortExtent.GetCenterWidth(), RadarReceiver.ViewPortExtent.GetCenterHeight());
-            GenerateRandomPlots(RadarReceiver.BullsEye.Position, 100.00, RandomNumberGen.Next(100));
+            GenerateRandomPlots(RadarReceiver.BullsEye.Position, 100.00, 2);
             // var newContact = CreateContactAtPoint(newPosition, ContactTypes.AirFriendly, 90, 4500, 36000);
             // var chaseContact = CreateContactAtPolarCoordinate(newContact.Position, ContactTypes.AirEnemy, new PolarCoordinate(270.00, 25.00), 90.00, 7800, 36000);
 
@@ -289,10 +289,15 @@ namespace TacticsLibrary
             }
 
             // If there are rectangles to process
-            if ((e.RectangleRegionsF?.Count ?? 0) > 0)
+            if (!refPoint.Running)
+            {
+                return;
+            }
+
+            if ((e.RectangleRegionsF?.Count ?? 0) > 0 && refPoint.Running)
             {
                 // If we are being called from another thread 
-                if (plotPanel.InvokeRequired)
+                if (plotPanel.InvokeRequired && refPoint.Running)
                 {
                     // use a MethodInvoker to invoke the method
                     plotPanel.Invoke(new MethodInvoker(delegate
