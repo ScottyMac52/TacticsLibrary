@@ -4,17 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{28E323A4-CFFA-463D-B84E-3602916511EA}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <RootNamespace>TacticsLibrary</RootNamespace>
-    <AssemblyName>TacticsLibrary</AssemblyName>
+    <ProjectGuid>{151720E6-EEB1-43AA-8AFF-23A5022311B1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TrackingObjects</RootNamespace>
+    <AssemblyName>TrackingObjects</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -38,58 +35,53 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="frmMain.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmMain.Designer.cs">
-      <DependentUpon>frmMain.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
+    <Compile Include="Adapters\GraphicsAdapter.cs" />
+    <Compile Include="Converters\CoordinateConverter.cs" />
+    <Compile Include="Converters\PositionConverter.cs" />
+    <Compile Include="DrawObjects\Contact.cs" />
+    <Compile Include="DrawObjects\Marker.cs" />
+    <Compile Include="DrawObjects\RadarPicture.cs" />
+    <Compile Include="DrawObjects\ReferencePoint.cs" />
+    <Compile Include="Enums\ContactTypes.cs" />
+    <Compile Include="Enums\ReferencePositions.cs" />
+    <Compile Include="Enums\TrigQuadrant.cs" />
+    <Compile Include="Enums\UpdateEventTypes.cs" />
+    <Compile Include="EventHandlers\ReferencePointChangedEventArgs.cs" />
+    <Compile Include="EventHandlers\ReferencePointChangedEventHandler.cs" />
+    <Compile Include="Extensions\GeometryTrigExtensions.cs" />
+    <Compile Include="Extensions\GraphicsExtensions.cs" />
+    <Compile Include="Interfaces\IContact.cs" />
+    <Compile Include="Interfaces\IDrawContact.cs" />
+    <Compile Include="Interfaces\IGraphics.cs" />
+    <Compile Include="Interfaces\IMarker.cs" />
+    <Compile Include="Interfaces\IReferencePoint.cs" />
+    <Compile Include="Interfaces\ISensor.cs" />
+    <Compile Include="Interfaces\IVisibleObjects.cs" />
+    <Compile Include="Interfaces\ReferencePointChanged.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="frmMain.resx">
-      <DependentUpon>frmMain.cs</DependentUpon>
+    <Compile Include="ReferencePointFactory.cs" />
+    <Compile Include="TrackingObjects\DrawContact.cs" />
+    <Compile Include="TrackingObjects\PolarCoordinate.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DrawObjects\ReferencePoint.resx">
+      <DependentUpon>ReferencePoint.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TrackingObjects\TrackingObjects.csproj">
-      <Project>{151720e6-eeb1-43aa-8aff-23a5022311b1}</Project>
-      <Name>TrackingObjects</Name>
-    </ProjectReference>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

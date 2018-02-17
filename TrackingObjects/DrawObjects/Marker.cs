@@ -1,8 +1,4 @@
-﻿using log4net;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-using TacticsLibrary.Adapters;
+﻿using System.Drawing;
 using TacticsLibrary.DrawObjects;
 using TacticsLibrary.EventHandlers;
 
@@ -13,8 +9,8 @@ namespace TacticsLibrary.Interfaces
     /// </summary>
     public class Marker : ReferencePoint, IMarker
     {
-        public Marker(ISensor detectedBy, PointF position, ILog logger)
-            : base(detectedBy, position, logger)
+        internal Marker(ISensor detectedBy, PointF position)
+            : base(detectedBy, position)
         {
             ReferencePointChanged += Marker_ReferencePointChanged;
         }
