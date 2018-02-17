@@ -34,7 +34,7 @@ namespace TacticsLibrary.DrawObjects
             Position = position;
             if (logger == null)
             {
-                Logger = LogManager.GetLogger(typeof(ReferencePoint));
+                Logger = LogManager.GetLogger("ReferencePoint");
             }
             else
             {

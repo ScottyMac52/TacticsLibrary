@@ -122,6 +122,8 @@ namespace TacticsLibrary.Interfaces
                     Thread.Sleep(CustomUpdateDuration ?? DEFAULT_UPDATE_MILISECONDS);
                 }
             }
+
+            Logger.Info($"{this} has stopped processing");
         }
                   
         #region IEquatable<Contact> Implementation

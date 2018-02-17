@@ -35,7 +35,7 @@ namespace TacticsLibrary
             base.OnLoad(e);
             RandomNumberGen = new Random((int)DateTime.Now.Ticks);
             var newPosition = new PointF(RadarReceiver.ViewPortExtent.GetCenterWidth(), RadarReceiver.ViewPortExtent.GetCenterHeight());
-            GenerateRandomPlots(RadarReceiver.BullsEye.Position, 100.00, 2);
+            GenerateRandomPlots(RadarReceiver.BullsEye.Position, 100.00, 100);
             // var newContact = CreateContactAtPoint(newPosition, ContactTypes.AirFriendly, 90, 4500, 36000);
             // var chaseContact = CreateContactAtPolarCoordinate(newContact.Position, ContactTypes.AirEnemy, new PolarCoordinate(270.00, 25.00), 90.00, 7800, 36000);
 
@@ -112,7 +112,17 @@ namespace TacticsLibrary
 
             for (int x=0; x < columns.Length; x++)
             {
-                gridViewContacts.Columns.Add(columns[x]);
+                if (gridViewContacts.InvokeRequired)
+                {
+                    gridViewContacts.Invoke(new MethodInvoker(delegate
+                    {
+                        gridViewContacts.Columns.Add(columns[x]);
+                    }));
+                }
+                else
+                {
+                    gridViewContacts.Columns.Add(columns[x]);
+                }
             }
         }
 
@@ -173,30 +183,20 @@ namespace TacticsLibrary
 
         private RadarPicture InitializeRadar()
         {
-            var bullsEye = new Marker(RadarReceiver, new PointF(123, 90), Logger)
+            var refFactory = new ReferencePointFactory<Marker>();
+
+            var bullsEye = refFactory.CreateMarker("Bullseye", RadarReceiver, new PointF(123, 90));
+            bullsEye.PaintMethod = (graphics, refPoint) =>
             {
-                Name = "Bullseye",
-                Speed = 0.00,
-                Altitude = 0.00,
-                Heading = 0.00,
-                PaintMethod = (graphics, refPoint) =>
-                {
-                    graphics.FillCircle(Brushes.Blue, refPoint.Position.X, refPoint.Position.Y, 10);
-                    graphics.FillCircle(Brushes.Red, refPoint.Position.X, refPoint.Position.Y, 5);
-                }
+                graphics.FillCircle(Brushes.Blue, refPoint.Position.X, refPoint.Position.Y, 10);
+                graphics.FillCircle(Brushes.Red, refPoint.Position.X, refPoint.Position.Y, 5);
             };
 
-            var homePlate = new Marker(RadarReceiver, new PointF(100, 200), Logger)
+            var homePlate = refFactory.CreateMarker("Homeplate", RadarReceiver, new PointF(100, 200));
+            bullsEye.PaintMethod = (graphics, refPoint) =>
             {
-                Name = "Homeplate",
-                Speed = 0.00,
-                Altitude = 0.00,
-                Heading = 0.00,
-                PaintMethod = (graphics, refPoint) =>
-                {
-                    graphics.FillCircle(Brushes.White, refPoint.Position.X, refPoint.Position.Y, 10);
-                    graphics.FillCircle(Brushes.Blue, refPoint.Position.X, refPoint.Position.Y, 5);
-                }
+                graphics.FillCircle(Brushes.White, refPoint.Position.X, refPoint.Position.Y, 10);
+                graphics.FillCircle(Brushes.Blue, refPoint.Position.X, refPoint.Position.Y, 5);
             };
 
             var radarSize = new Size(plotPanel.ClientSize.Width, plotPanel.ClientSize.Height);
@@ -245,14 +245,10 @@ namespace TacticsLibrary
         protected IReferencePoint CreateContactAtPoint(PointF position, ContactTypes contactType, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
         {
             var referenceContactFactory = new ReferencePointFactory<Contact>();
-
             var newContact = referenceContactFactory.CreateContact(RadarReceiver, position, heading, altitude, speed, contactType);
-
-            Logger.Info($"Adding contact: {contactType} as a plotted contact at {position}");
+            Logger.Info($"Creating contact: {contactType} as a plotted contact at {position}");
             newContact.ReferencePointChanged += NewContact_ReferencePointChanged;
-            RadarReceiver.AddContact((IContact) newContact);
-            newContact.ReferencePointChanged += NewContact_ReferencePointChanged;
-            Logger.Info($"New contact added: {newContact}");
+            RadarReceiver.AddContact(newContact);
             ((IContact) newContact).Start();
             return newContact;
         }
@@ -264,7 +260,6 @@ namespace TacticsLibrary
         /// <param name="e"></param>
         private void NewContact_ReferencePointChanged(object sender, EventHandlers.ReferencePointChangedEventArgs e)
         {
-
             var refPoint = sender as IContact;
 
             if(!refPoint.Running)
@@ -310,8 +305,6 @@ namespace TacticsLibrary
                     plotPanel.Invalidate();
                 }
             }
-
-            // RefreshContactList();
         }
 
         /// <summary>
@@ -360,11 +353,10 @@ namespace TacticsLibrary
 
         private void RefreshContactList()
         {
-
-            var dataBindList = RadarReceiver
-                .CurrentContacts
-                .Values
-                .Where(contact => contact.Running)
+            var dataBindList = RadarReceiver?
+                .CurrentContacts?
+                .Values?
+                .Where(contact => contact?.Running ?? false)?
                 .ToList();
 
             if (gridViewContacts.InvokeRequired)
@@ -383,21 +375,21 @@ namespace TacticsLibrary
 
         }
 
-        private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
+        private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             RadarReceiver
             .CurrentContacts
             .Values
-            .Where(contact => contact.Running)
+            .Where(contact => contact?.Running ?? false)
             .ToList()
             .ForEach(cont =>
             {
-                cont.Stop();
+                cont?.Stop();
             });
 
             e.Cancel = RadarReceiver.CurrentContacts.Values.Any(cnt =>
             {
-                return cnt.Running;
+                return cnt?.Running ?? false;
             });
         }
     }

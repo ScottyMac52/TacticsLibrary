@@ -39,7 +39,7 @@ namespace TacticsLibrary.Interfaces
             HomePlate = homePlate;
             ViewPortExtent = viewPortExtent;
             CurrentContacts = new SortedList<Guid, IContact>();
-            Logger = logger == null ? LogManager.GetLogger(typeof(RadarPicture)) : logger;
+            Logger = logger == null ? LogManager.GetLogger("RadarPicture") : logger;
             Logger.Info($"Created radar {ViewPortExtent} {BullsEye} {HomePlate}");
         }
 
@@ -64,12 +64,13 @@ namespace TacticsLibrary.Interfaces
             BullsEye?.PaintMethod?.Invoke(g, BullsEye);
             HomePlate?.PaintMethod?.Invoke(g, HomePlate);
 
-            CurrentContacts.Where(cont => cont.Value?.Running ?? false == true)
-                .ToList()
-                .ForEach(con => {
-                    IGraphics newContext = new GraphicsAdapter(g.Context);
-                    con.Value?.Draw(newContext);
-                });
+            var activeContacts = CurrentContacts.Where(cont => cont.Value?.Running ?? false == true)
+                .ToList();
+
+            activeContacts.ForEach(con => {
+                IGraphics newContext = new GraphicsAdapter(g.Context);
+                con.Value?.Draw(newContext);
+            });
         }
 
         /// <summary>
