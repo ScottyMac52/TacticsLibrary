@@ -203,6 +203,7 @@
             this.plotPanel.Size = new System.Drawing.Size(500, 500);
             this.plotPanel.TabIndex = 1;
             this.plotPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.PlotPanel_Paint);
+            this.plotPanel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.PlotPanel_MouseClick);
             this.plotPanel.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.plotPanel_MouseDoubleClick);
             this.plotPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PlotPanel_MouseMove);
             // 
