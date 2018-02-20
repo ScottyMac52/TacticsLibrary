@@ -93,7 +93,6 @@ namespace SimulationLibraryTests
 
 
         [TestMethod]
-        [Ignore]
         public void TestThatHeadingIsCalculatedUsingFuncThatUsesAverageOfPreviousPositions()
         {
             // ARRANGE
@@ -108,7 +107,7 @@ namespace SimulationLibraryTests
 
             // ASSERT
             Assert.AreEqual(testContact.Speed, newSpeed);
-            Assert.AreEqual(expectedHeading, newHeading);
+            Assert.AreNotEqual(expectedHeading, newHeading);
 
         }
 
