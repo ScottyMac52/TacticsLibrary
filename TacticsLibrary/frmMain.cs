@@ -167,6 +167,7 @@ namespace TacticsLibrary
         private void PlotPanel_Paint(object sender, PaintEventArgs e)
         {
             var g = new GraphicsAdapter(e.Graphics);
+            Logger.Info($"Paint: {e.ClipRectangle}");
             RadarReceiver.Draw(g);
         }
 
@@ -280,18 +281,24 @@ namespace TacticsLibrary
 
             if ((e.RectangleRegionsF?.Count ?? 0) > 0 && refPoint.Running)
             {
+                e.RectangleRegionsF.ForEach(rectF =>
+                {
+                });
+
+                var region = new Region(e.RectangleRegionsF[0]);
+                region.Union(e.RectangleRegionsF[1]);
                 // If we are being called from another thread 
                 if (plotPanel.InvokeRequired && refPoint.Running)
                 {
                     // use a MethodInvoker to invoke the method
                     plotPanel.Invoke(new MethodInvoker(delegate
                     {
-                        plotPanel.Invalidate();
+                        plotPanel.Invalidate(region);
                     }));
                 }
                 else
                 {
-                    plotPanel.Invalidate();
+                    plotPanel.Invalidate(region);
                 }
             }
         }
