@@ -63,6 +63,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SimulationLibrary\SimulationLibrary.csproj">
+      <Project>{D7BE2F0B-5C6B-487F-9C37-95E1D6A11CFB}</Project>
+      <Name>SimulationLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TrackingObjects\TrackingObjects.csproj">
       <Project>{151720e6-eeb1-43aa-8aff-23a5022311b1}</Project>
       <Name>TrackingObjects</Name>

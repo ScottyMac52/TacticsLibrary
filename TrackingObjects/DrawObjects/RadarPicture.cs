@@ -1,13 +1,14 @@
-﻿using log4net;
+﻿using GraphicsLibrary;
+using GraphicsLibrary.Adapters;
+using log4net;
+using SimulationLibrary;
+using SimulationLibrary.Extensions;
+using SimulationLibrary.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
-using System.Threading.Tasks;
-using TacticsLibrary.Adapters;
-using TacticsLibrary.Extensions;
-using static TacticsLibrary.DrawObjects.ReferencePoint;
 
 namespace TacticsLibrary.Interfaces
 {

@@ -1,17 +1,17 @@
-﻿using log4net;
+﻿using DrawingLibrary;
+using GraphicsLibrary.Adapters;
+using log4net;
+using SimulationLibrary;
+using SimulationLibrary.Converters;
+using SimulationLibrary.Extensions;
+using SimulationLibrary.Factories;
+using SimulationLibrary.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
-using TacticsLibrary.Adapters;
-using TacticsLibrary.Converters;
-using TacticsLibrary.Enums;
-using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
-using TacticsLibrary.DrawObjects;
-using System.Threading.Tasks;
 
 namespace TacticsLibrary
 {
@@ -35,18 +35,7 @@ namespace TacticsLibrary
             base.OnLoad(e);
             RandomNumberGen = new Random((int)DateTime.Now.Ticks);
             var newPosition = new PointF(RadarReceiver.ViewPortExtent.GetCenterWidth(), RadarReceiver.ViewPortExtent.GetCenterHeight());
-            GenerateRandomPlots(RadarReceiver.BullsEye.Position, 100.00, 100);
-            // var newContact = CreateContactAtPoint(newPosition, ContactTypes.AirFriendly, 90, 4500, 36000);
-            // var chaseContact = CreateContactAtPolarCoordinate(newContact.Position, ContactTypes.AirEnemy, new PolarCoordinate(270.00, 25.00), 90.00, 7800, 36000);
-
-            // Create a target that is 180° 25 miles from BullsEye
-            // var newBullsEyeTarget = CreateContactAtPolarCoordinate(
-            //    RadarReceiver.BullsEye.Position,
-            //   ContactTypes.AirUnknown,
-            //    new PolarCoordinate(180.00, 100.00),
-            //    360.00,
-            //    13000.00,
-            //    52000);
+            GenerateRandomPlots(RadarReceiver.BullsEye.Position, 100.00, 2);
             GenerateColumns();
             RefreshContactList();
 
@@ -244,12 +233,12 @@ namespace TacticsLibrary
         /// <returns></returns>
         protected IReferencePoint CreateContactAtPoint(PointF position, ContactTypes contactType, double heading = 0.00, double speed = 0.00, double altitude = 0.00)
         {
-            var referenceContactFactory = new ReferencePointFactory<Contact>();
-            var newContact = referenceContactFactory.CreateContact(RadarReceiver, position, heading, altitude, speed, contactType);
+            var contactFactory = new ContactCreator();
+            var newContact = contactFactory.Create(RadarReceiver, position, heading, altitude, speed, contactType);
             Logger.Info($"Creating contact: {contactType} as a plotted contact at {position}");
             newContact.ReferencePointChanged += NewContact_ReferencePointChanged;
             RadarReceiver.AddContact(newContact);
-            ((IContact) newContact).Start();
+            newContact.Start();
             return newContact;
         }
 
@@ -258,11 +247,11 @@ namespace TacticsLibrary
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void NewContact_ReferencePointChanged(object sender, EventHandlers.ReferencePointChangedEventArgs e)
+        private void NewContact_ReferencePointChanged(object sender, SimulationLibrary.EventHandlers.ReferencePointChangedEventArgs e)
         {
             var refPoint = sender as IContact;
 
-            if(!refPoint.Running)
+            if(!refPoint?.Running ?? false)
             {
                 return;
             }
@@ -280,11 +269,11 @@ namespace TacticsLibrary
 
             if (Logger?.IsDebugEnabled ?? false)
             {
-                Logger.Debug($"{((IContact)sender).UniqueId} : {e.PropertyName} has changed.");
+                Logger.Debug($"{refPoint?.UniqueId} : {e.PropertyName} has changed.");
             }
 
             // If there are rectangles to process
-            if (!refPoint.Running)
+            if (!refPoint?.Running ?? false)
             {
                 return;
             }

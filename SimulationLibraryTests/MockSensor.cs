@@ -1,7 +1,9 @@
-﻿using System;
+﻿using GraphicsLibrary;
+using SimulationLibrary;
+using SimulationLibrary.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-using TacticsLibrary.Interfaces;
 
 namespace SimulationLibraryTests
 {

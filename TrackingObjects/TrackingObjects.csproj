@@ -44,44 +44,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Adapters\GraphicsAdapter.cs" />
-    <Compile Include="Converters\CoordinateConverter.cs" />
-    <Compile Include="Converters\PositionConverter.cs" />
-    <Compile Include="DrawObjects\Contact.cs" />
-    <Compile Include="DrawObjects\Marker.cs" />
     <Compile Include="DrawObjects\RadarPicture.cs" />
-    <Compile Include="DrawObjects\ReferencePoint.cs" />
-    <Compile Include="Enums\ContactTypes.cs" />
-    <Compile Include="Enums\ReferencePositions.cs" />
-    <Compile Include="Enums\TrigQuadrant.cs" />
-    <Compile Include="Enums\UpdateEventTypes.cs" />
-    <Compile Include="EventHandlers\ReferencePointChangedEventArgs.cs" />
-    <Compile Include="EventHandlers\ReferencePointChangedEventHandler.cs" />
-    <Compile Include="Extensions\GeometryTrigExtensions.cs" />
-    <Compile Include="Extensions\GraphicsExtensions.cs" />
-    <Compile Include="Interfaces\IContact.cs" />
-    <Compile Include="Interfaces\IDrawContact.cs" />
-    <Compile Include="Interfaces\IGraphics.cs" />
-    <Compile Include="Interfaces\IMarker.cs" />
-    <Compile Include="Interfaces\IReferencePoint.cs" />
-    <Compile Include="Interfaces\ISensor.cs" />
-    <Compile Include="Interfaces\IVisibleObjects.cs" />
-    <Compile Include="Interfaces\ReferencePointChanged.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReferencePointFactory.cs" />
-    <Compile Include="TrackingObjects\DrawContact.cs" />
-    <Compile Include="TrackingObjects\PolarCoordinate.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DrawObjects\ReferencePoint.resx">
-      <DependentUpon>ReferencePoint.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GraphicsLibrary\GraphicsLibrary.csproj">
+      <Project>{F4313FA2-1A1D-485E-BD8C-5F36499B4659}</Project>
+      <Name>GraphicsLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimulationLibrary\SimulationLibrary.csproj">
+      <Project>{d7be2f0b-5c6b-487f-9c37-95e1d6a11cfb}</Project>
+      <Name>SimulationLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

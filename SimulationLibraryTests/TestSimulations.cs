@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SimulationLibrary;
+using SimulationLibrary.Extensions;
+using SimulationLibrary.Interfaces;
+using SimulationLibrary.Simulations;
 using System.Drawing;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SimulationLibrary;
 using TacticsLibrary;
-using TacticsLibrary.Enums;
-using TacticsLibrary.Extensions;
 using TacticsLibrary.Interfaces;
 
 namespace SimulationLibraryTests
@@ -27,7 +27,7 @@ namespace SimulationLibraryTests
         public void TestThatSpeedRemainsSameWithStableFactor()
         {
             // ARRANGE
-            var testContact = ContactFactory.CreateContact(SensorUnderTest, new PointF(100, 100), 360.0, 1200.00, 200.00, ContactTypes.AirFriendly);
+            var testContact = (IReferencePoint) ContactFactory.CreateContact(SensorUnderTest, new PointF(100, 100), 360.0, 1200.00, 200.00, ContactTypes.AirFriendly);
             var simulationObject = new ContactManagement(testContact, 1.0F, 1.0F);
 
             // ACT
@@ -43,7 +43,7 @@ namespace SimulationLibraryTests
         public void TestThatSpeedChangesWithUnstableFactor()
         {
             // ARRANGE
-            var testContact = ContactFactory.CreateContact(SensorUnderTest, new PointF(100, 100), 360.0, 1200.00, 200.00, ContactTypes.AirFriendly);
+            var testContact = (IReferencePoint) ContactFactory.CreateContact(SensorUnderTest, new PointF(100, 100), 360.0, 1200.00, 200.00, ContactTypes.AirFriendly);
             var simulationObject = new ContactManagement(testContact, 1.0F, .10F);
 
             // ACT
@@ -59,7 +59,7 @@ namespace SimulationLibraryTests
         public void TestThatSpeedIsCalculatedUsingFunc()
         {
             // ARRANGE
-            var testContact = ContactFactory.CreateContact(SensorUnderTest, new PointF(100, 100), 360.0, 1200.00, 200.00, ContactTypes.AirFriendly);
+            var testContact = (IReferencePoint) ContactFactory.CreateContact(SensorUnderTest, new PointF(100, 100), 360.0, 1200.00, 200.00, ContactTypes.AirFriendly);
             var simulationObject = new ContactManagement(testContact, 1.0F, .10F);
             var expectedSpeed = 201.00;
 
@@ -77,7 +77,7 @@ namespace SimulationLibraryTests
         public void TestThatHeadingIsCalculatedUsingFunc()
         {
             // ARRANGE
-            var testContact = ContactFactory.CreateContact(SensorUnderTest, new PointF(100, 100), 360.0, 1200.00, 200.00, ContactTypes.AirFriendly);
+            var testContact = (IReferencePoint) ContactFactory.CreateContact(SensorUnderTest, new PointF(100, 100), 360.0, 1200.00, 200.00, ContactTypes.AirFriendly);
             var simulationObject = new ContactManagement(testContact, .99F, 1.0F);
             var expectedHeading = 270.00;
 
@@ -96,7 +96,7 @@ namespace SimulationLibraryTests
         public void TestThatHeadingIsCalculatedUsingFuncThatUsesAverageOfPreviousPositions()
         {
             // ARRANGE
-            var testContact = ContactFactory.CreateContact(SensorUnderTest, new PointF(100, 100), 360.0, 1200.00, 200.00, ContactTypes.AirFriendly);
+            var testContact = (IReferencePoint) ContactFactory.CreateContact(SensorUnderTest, new PointF(100, 100), 360.0, 1200.00, 200.00, ContactTypes.AirFriendly);
             var simulationObject = new ContactManagement(testContact, .99F, 1.0F);
             simulationObject.PreviousPositions.AddRange(new PointF[] { new PointF(1.1F, 1.1F), new PointF(2.1F, 1.1F), new PointF(3.1F, 1.1F) });
             var expectedHeading = 270.00;

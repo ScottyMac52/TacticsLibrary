@@ -1,9 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SimulationLibrary;
+using SimulationLibrary.Converters;
+using SimulationLibrary.Extensions;
 using System.Drawing;
-using TacticsLibrary.Converters;
-using TacticsLibrary.Extensions;
-using TacticsLibrary.Interfaces;
-using TacticsLibrary.DrawObjects;
 
 namespace TacticsLibrary.tests
 {

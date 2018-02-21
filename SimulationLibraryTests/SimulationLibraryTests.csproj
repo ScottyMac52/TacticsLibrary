@@ -57,6 +57,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GraphicsLibrary\GraphicsLibrary.csproj">
+      <Project>{F4313FA2-1A1D-485E-BD8C-5F36499B4659}</Project>
+      <Name>GraphicsLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SimulationLibrary\SimulationLibrary.csproj">
       <Project>{D7BE2F0B-5C6B-487F-9C37-95E1D6A11CFB}</Project>
       <Name>SimulationLibrary</Name>
