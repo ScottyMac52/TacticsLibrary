@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{28E323A4-CFFA-463D-B84E-3602916511EA}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>TacticsLibrary</RootNamespace>
-    <AssemblyName>TacticsLibrary</AssemblyName>
+    <RootNamespace>TacticsDisplay</RootNamespace>
+    <AssemblyName>TacticsDisplay</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -31,6 +31,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>TacticsLibrary.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
